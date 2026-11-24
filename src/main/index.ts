@@ -50,6 +50,10 @@ function createMainWindow(icon: NativeImage | string = DEFAULT_ICON): BrowserWin
   return win
 }
 
+// GESTAO_USER_DATA: pasta de dados alternativa (gravação das demonstrações e testes), só fora do instalador.
+const altUserData = process.env['GESTAO_USER_DATA']
+if (altUserData && !app.isPackaged) app.setPath('userData', altUserData)
+
 installFileLog()
 process.on('uncaughtException', (error) => console.error('[uncaught]', error))
 process.on('unhandledRejection', (error) => console.error('[unhandled]', error))

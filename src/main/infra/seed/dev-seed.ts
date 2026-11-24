@@ -274,14 +274,14 @@ function routineQuotes(): SeedQuote[] {
     const plate = PLATES[(i * 4) % PLATES.length]!
     const date = `${String(day.getDate()).padStart(2, '0')}/${String(day.getMonth() + 1).padStart(2, '0')}/${day.getFullYear()}`
     quotes.push({
-      number: 2001 + i,
+      number: 501 + i,
       date,
       customer: OWNER[plate]!,
       plate,
       km: 30_000 + i * 1_500,
       status: 'APROVADO',
       items: ROUTINE[(i * 3) % ROUTINE.length]!.items(),
-      workOrder: { number: 3001 + i, status: 'ENTREGUE', deliveredAt: date }
+      workOrder: { number: 601 + i, status: 'ENTREGUE', deliveredAt: date }
     })
   }
   return quotes

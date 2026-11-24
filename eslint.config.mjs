@@ -22,6 +22,11 @@ export default tseslint.config(
     languageOptions: { globals: globals.node }
   },
   {
+    // Script de gravação: roda no Node e envia trechos para a página (document, addEventListener).
+    files: ['scripts/**/*.mjs'],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } }
+  },
+  {
     rules: {
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }]
     }
