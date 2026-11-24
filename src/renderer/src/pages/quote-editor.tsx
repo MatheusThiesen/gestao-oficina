@@ -1,14 +1,15 @@
-import { FileDown, FolderOpen, KeyRound, Save, Send } from 'lucide-react'
+import { FileDown, FolderOpen, KeyRound, Save } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { formatDate, formatDocNumber, formatKeyTag, parseScaled } from '@shared/format'
-import { APPROVAL_CHANNEL_LABEL, type QuoteView } from '@shared/quotes'
+import { formatDocNumber, formatKeyTag, parseScaled } from '@shared/format'
+import type { QuoteView } from '@shared/quotes'
 import type { AppSettings } from '@shared/settings'
 import { Flash, FormError } from '@/components/flash'
 import { PageHeader } from '@/components/layout/page-header'
 import { ConditionsAndSummary } from '@/components/quote/conditions-summary'
 import { CustomerVehiclePanel } from '@/components/quote/customer-vehicle-panel'
 import { ItemsTable } from '@/components/quote/items-table'
+import { StatusNotice, StatusTimeline, WorkflowActions } from '@/components/quote/workflow-bar'
 import { StatusTag } from '@/components/status-tag'
 import { Button } from '@/components/ui/button'
 import { useFlash } from '@/hooks/use-flash'
@@ -33,7 +34,7 @@ export function QuoteEditorPage() {
 
   return (
     <QuoteEditor
-      key={quote ? `${quote.id}-${quote.status}` : 'novo'}
+      key={quote ? quote.id : 'novo'}
       settings={settings}
       quote={quote}
       initialPlate={params.get('placa') ?? ''}
@@ -53,7 +54,7 @@ function QuoteEditor({ settings, quote, initialPlate, onReload }: EditorProps) {
   const navigate = useNavigate()
   const [draft, setDraft] = useState<QuoteDraft>(() => (quote ? draftFromView(quote) : emptyDraft(settings, initialPlate)))
   const submit = useSubmit()
-  const [flash, showFlash] = useFlash()
+  const [flash, showFlash] = useFlash(4500)
   const readOnly = quote ? !quote.editable : false
   const update = (patch: Partial<QuoteDraft>) => setDraft((d) => ({ ...d, ...patch }))
 
@@ -131,28 +132,23 @@ function QuoteEditor({ settings, quote, initialPlate, onReload }: EditorProps) {
             <Button variant="icon" className="size-8" aria-label="Abrir pasta dos PDFs" title="Abrir pasta dos PDFs" onClick={() => void call('quotes:openPdfFolder')}>
               <FolderOpen size={16} aria-hidden="true" />
             </Button>
-            {!readOnly && (
-              <Button variant="primary" disabled title="Disponível na próxima etapa">
-                <Send size={15} aria-hidden="true" />
-                Enviar para aprovação
-              </Button>
-            )}
+            <WorkflowActions
+              quote={quote}
+              persist={persist}
+              readOnly={readOnly}
+              onDone={(message, id) => {
+                showFlash(message)
+                if (!quote) navigate(`/orcamentos/${id}`, { replace: true })
+                else onReload()
+              }}
+            />
           </>
         }
       />
 
       <FormError message={submit.error} />
-      {quote?.approval && (
-        <div className="mb-4 rounded-md border border-[#bfe3cc] bg-[#e1f3e8] px-3 py-2 text-[13.5px] text-[#17693a]">
-          Aprovado por {quote.approval.approvedBy} em {formatDate(quote.approval.approvedAt)} (
-          {APPROVAL_CHANNEL_LABEL[quote.approval.channel]}). Este orçamento é somente leitura.
-        </div>
-      )}
-      {quote && !quote.approval && readOnly && (
-        <div className="mb-4 rounded-md border border-line-strong bg-white px-3 py-2 text-[13.5px] text-muted">
-          Este orçamento não pode mais ser alterado.
-        </div>
-      )}
+      <StatusTimeline quote={quote} />
+      {quote && <StatusNotice quote={quote} />}
 
       <CustomerVehiclePanel draft={draft} update={update} errors={submit.fields} readOnly={readOnly} locked={!!quote} />
       <ItemsTable

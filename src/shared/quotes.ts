@@ -1,5 +1,6 @@
 import type { CustomerInput, VehicleInput } from './registry'
 import type { DocumentStatus, QuoteStatus, WorkOrderStatus } from './status'
+import type { WorkflowAction } from './workflow'
 
 export type QuoteItemType = 'PECA' | 'MAO_DE_OBRA'
 
@@ -73,6 +74,9 @@ export interface QuoteView {
   /** Status mostrado no cabeçalho: o da OS, se houver. */
   displayStatus: DocumentStatus
   editable: boolean
+  /** Ações de status permitidas agora (calculadas no processo principal). */
+  actions: WorkflowAction[]
+  refusal: { at: string; reason: string | null } | null
   createdAt: string
   sentAt: string | null
   validUntil: string
@@ -95,7 +99,12 @@ export interface QuoteView {
     status: WorkOrderStatus
     keyTagNumber: number | null
     openedAt: string
+    readyAt: string | null
     deliveredAt: string | null
+    canceledAt: string | null
+    cancelReason: string | null
+    entryKm: number | null
+    exitKm: number | null
   } | null
 }
 

@@ -28,7 +28,7 @@ a usar essa identidade: o menu, o ícone e os atalhos do Windows e o PDF que vai
 | Tela | O que dá para fazer |
 | --- | --- |
 | **Painel** | Ver o dia (carros na oficina, prontos para entregar, orçamentos esperando resposta) e analisar a semana ou o mês: faturamento, lucro bruto, margem, ticket médio, taxa de aprovação e gráfico de faturamento × lucro. |
-| **Orçamentos e OS** | Buscar por placa, cliente, número ou número da chave; filtrar por status. |
+| **Orçamentos e OS** | Buscar por placa, cliente, número ou número da chave; filtrar por status. Levar cada orçamento pelas etapas: enviar pelo WhatsApp, registrar a aprovação, abrir a OS com a chave, marcar como pronto e entregar (ou recusar, reabrir e cancelar). |
 | **Orçamento** | Começar pela placa (carro conhecido traz o dono e o km; carro novo é cadastrado ali mesmo, escolhendo marca e modelo da Tabela FIPE com a logo da marca), lançar peças e mão de obra com sugestões do cadastro, aplicar desconto, escolher a garantia (ou "sem garantia") e ver o custo e o lucro internos. Gerar o PDF para o cliente. |
 | **Clientes** | Cadastro com CPF/CNPJ e WhatsApp validados, carros de cada cliente e total gasto. |
 | **Veículos** | Ficha com placa Mercosul, histórico de serviços, garantias vigentes e próxima troca de óleo. Troca de dono sem perder o histórico. |
@@ -36,8 +36,7 @@ a usar essa identidade: o menu, o ícone e os atalhos do Windows e o PDF que vai
 | **Configurações** | Nome, logo, cores, dados da empresa, padrões do orçamento (valor da hora, markup, validade, garantia), regra da troca de óleo, senha de acesso, atualizações e backup. |
 | **Backup** | Automático todo dia (guarda os 30 últimos), backup na hora, cópia para pen drive e importação em outro computador. |
 
-**Ainda em desenvolvimento:** enviar o orçamento pelo WhatsApp e registrar a aprovação, abrir e encerrar a
-OS com a chave e registrar compras de peças.
+**Ainda em desenvolvimento:** registrar compras de peças e nova versão de um orçamento já aprovado.
 
 ## Veja funcionando
 
@@ -120,6 +119,21 @@ Ao concluir, o programa abre no **Painel**.
 6. Preencha as **Condições** (validade, previsão de entrega, pagamento, garantia, observações). Para um
    serviço sem garantia, marque **Sem garantia**: o PDF informa "Garantia: não inclusa neste serviço".
 7. **Salvar** (`Ctrl+S`) ou **Gerar PDF**, que salva e abre o PDF pronto para mandar ao cliente.
+
+### Do orçamento à entrega
+
+No alto do orçamento, uma linha do tempo mostra a etapa atual, e os botões mudam conforme ela:
+
+| Etapa | O que dá para fazer |
+| --- | --- |
+| **Rascunho** | **Enviar para aprovação**: gera o PDF, mostra o arquivo na pasta e abre a conversa do cliente no WhatsApp com a mensagem pronta (é só anexar o PDF). Ou **Registrar aprovação** direto, se o cliente aprovou no balcão. |
+| **Aguardando aprovação** | **Registrar aprovação** (quem aprovou e como: balcão, telefone ou WhatsApp), **Recusado pelo cliente** (com motivo) ou **Reenviar**. Passada a validade, vira *Expirado*. |
+| **Aprovado** | Ao aprovar, a OS já pode ser aberta, com a **chave sugerida** (a menor livre). Se o carro ainda não chegou, abra a OS depois com **Abrir OS**. O orçamento aprovado fica guardado como foi aprovado e não muda mais. |
+| **Em execução** | **Marcar como pronto** ou **Cancelar OS** (com motivo). |
+| **Pronto** | **Entregar ao cliente** (km de saída opcional), **Voltar para execução** ou **Cancelar OS**. |
+| **Entregue** | A chave fica livre, a garantia começa a contar e o valor entra no faturamento do painel. |
+
+Recusado e expirado podem ser **reabertos** (voltam a rascunho, com a validade contando de novo).
 
 ### Atalhos de teclado
 

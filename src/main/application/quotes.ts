@@ -9,6 +9,7 @@ import type {
 import { vehicleLabel } from '@shared/registry'
 import type { DocumentStatus, QuoteStatus, WorkOrderStatus } from '@shared/status'
 import { computeValidUntil, isEditable, validateDraft, type DraftItem } from '../domain/quote/quote-rules'
+import { allowedActions } from '../domain/quote/workflow'
 import { calculateQuoteTotals, priceLine, type QuoteLine } from '../domain/quote/quote-totals'
 import type { CustomerRepository } from '../infra/repositories/customer-repository'
 import type { QuoteFull, QuoteItemRow, QuoteRepository } from '../infra/repositories/quote-repository'
@@ -147,6 +148,8 @@ export function toView(q: QuoteFull): QuoteView {
     status,
     displayStatus: (wo?.status ?? status) as DocumentStatus,
     editable: isEditable(status) && !q.next,
+    actions: allowedActions({ quote: status, workOrder: (wo?.status as WorkOrderStatus) ?? null, superseded: !!q.next }),
+    refusal: q.refusedAt ? { at: q.refusedAt.toISOString(), reason: q.refusalReason } : null,
     createdAt: q.createdAt.toISOString(),
     sentAt: q.sentAt?.toISOString() ?? null,
     validUntil: q.validUntil.toISOString(),
@@ -183,7 +186,12 @@ export function toView(q: QuoteFull): QuoteView {
           status: wo.status as WorkOrderStatus,
           keyTagNumber: wo.keyTag?.number ?? null,
           openedAt: wo.openedAt.toISOString(),
-          deliveredAt: wo.deliveredAt?.toISOString() ?? null
+          readyAt: wo.readyAt?.toISOString() ?? null,
+          deliveredAt: wo.deliveredAt?.toISOString() ?? null,
+          canceledAt: wo.canceledAt?.toISOString() ?? null,
+          cancelReason: wo.cancelReason,
+          entryKm: wo.entryKm,
+          exitKm: wo.exitKm
         }
       : null
   }

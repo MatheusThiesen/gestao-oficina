@@ -6,6 +6,7 @@
 import type { BackupStatus, RestoreResult } from './backup'
 import type { DashboardData, DashboardQuery } from './dashboard'
 import type { CatalogBrand, CatalogModel } from './vehicle-catalog'
+import type { ApproveInput, KeyTagOptions, SendResult } from './workflow'
 import type { DocumentListQuery, DocumentListResult, KeyTagView } from './documents'
 import type {
   CatalogPart,
@@ -64,6 +65,16 @@ export interface IpcContract {
   'vehicleCatalog:brands': { input: { search?: string }; output: CatalogBrand[] }
   'vehicleCatalog:models': { input: { brand: string; search?: string }; output: CatalogModel[] }
   'vehicleCatalog:logo': { input: { brand: string }; output: string | null }
+  'workflow:keyTags': { input: void; output: KeyTagOptions }
+  'workflow:send': { input: { id: number }; output: SendResult }
+  'workflow:approve': { input: ApproveInput; output: { workOrderNumber: number | null } }
+  'workflow:refuse': { input: { id: number; reason?: string }; output: void }
+  'workflow:reopen': { input: { id: number }; output: void }
+  'workflow:openWorkOrder': { input: { id: number; keyTagNumber: number | null }; output: { workOrderNumber: number } }
+  'workflow:markReady': { input: { id: number }; output: void }
+  'workflow:backToExecution': { input: { id: number }; output: void }
+  'workflow:deliver': { input: { id: number; exitKm: number | null }; output: void }
+  'workflow:cancel': { input: { id: number; reason: string }; output: void }
   'catalog:parts': { input: { search?: string }; output: CatalogPart[] }
   'catalog:services': { input: { search?: string }; output: CatalogService[] }
 }
