@@ -36,7 +36,22 @@ jobs:
       - run: npm test
       - run: npm run build
 
-      - name: Gerar instalador e publicar na Release
-        run: npx electron-builder --win --publish always
+      # O electron-builder só gera os arquivos; o envio é feito pelo gh logo abaixo.
+      # (Publicando direto, ele criava a Release duas vezes em paralelo e saía antes de enviar o .exe.)
+      - name: Gerar instalador
+        run: npx electron-builder --win --publish never
+
+      - name: Publicar na Release
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ls -la dist
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || \
+            gh release create "$GITHUB_REF_NAME" --title "Versão ${GITHUB_REF_NAME#v}" --generate-notes
+          SETUP="dist/Gestao-Oficina-Setup-${GITHUB_REF_NAME#v}.exe"
+          gh release upload "$GITHUB_REF_NAME" "$SETUP" "$SETUP.blockmap" dist/latest.yml --clobber
+          # Confere que os três arquivos estão lá (o programa instalado precisa do latest.yml e do .exe).
+          ASSETS=$(gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name')
+          echo "$ASSETS"
+          echo "$ASSETS" | grep -q '\.exe$' && echo "$ASSETS" | grep -q '^latest\.yml$' || { echo "Faltam arquivos na Release"; exit 1; }
