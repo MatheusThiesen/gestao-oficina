@@ -1,4 +1,5 @@
 import { app } from 'electron'
+import { BackupService } from './application/backup'
 import { expireOverdueQuotes } from './application/list-documents'
 import { initDatabase, type Db } from './infra/database'
 import { AppIconStore } from './infra/app-icon'
@@ -30,6 +31,7 @@ export interface Container {
   icons: AppIconStore
   lock: SessionLock
   updates: UpdateService
+  backups: BackupService
 }
 
 export async function createContainer(): Promise<Container> {
@@ -46,7 +48,8 @@ export async function createContainer(): Promise<Container> {
     logos: new LogoStore(appPaths.branding()),
     icons: new AppIconStore(appPaths.branding()),
     lock: new SessionLock(new SecurityRepository(db)),
-    updates: new UpdateService()
+    updates: new UpdateService(),
+    backups: new BackupService(new SettingsRepository(db), app.getVersion())
   }
 
   if (!app.isPackaged && (await seedIfEmpty(db))) console.info('[db] seed de desenvolvimento aplicado')
@@ -55,6 +58,7 @@ export async function createContainer(): Promise<Container> {
   const settings = await container.settings.get()
   await container.keyTags.ensureCount(settings.keyTagCount)
   await expireOverdueQuotes(container.documents)
+  container.backups.startAuto()
 
   return container
 }

@@ -17,6 +17,7 @@ a usar essa identidade: o menu, o ícone e os atalhos do Windows e o PDF que vai
 - [Primeiro uso: configuração inicial](#primeiro-uso-configuração-inicial)
 - [Uso no dia a dia](#uso-no-dia-a-dia)
 - [Atualizações](#atualizações)
+- [Backup e troca de computador](#backup-e-troca-de-computador)
 - [Onde ficam os dados](#onde-ficam-os-dados)
 - [Perguntas frequentes](#perguntas-frequentes)
 - [Como os valores são calculados](#como-os-valores-são-calculados)
@@ -32,10 +33,11 @@ a usar essa identidade: o menu, o ícone e os atalhos do Windows e o PDF que vai
 | **Clientes** | Cadastro com CPF/CNPJ e WhatsApp validados, carros de cada cliente e total gasto. |
 | **Veículos** | Ficha com placa Mercosul, histórico de serviços, garantias vigentes e próxima troca de óleo. Troca de dono sem perder o histórico. |
 | **Chaves** | Grade dos chaveiros numerados: quais estão livres e quais estão com qual carro. |
-| **Configurações** | Nome, logo, cores, dados da empresa, padrões do orçamento (valor da hora, markup, validade, garantia), regra da troca de óleo, senha de acesso e atualizações. |
+| **Configurações** | Nome, logo, cores, dados da empresa, padrões do orçamento (valor da hora, markup, validade, garantia), regra da troca de óleo, senha de acesso, atualizações e backup. |
+| **Backup** | Automático todo dia (guarda os 30 últimos), backup na hora, cópia para pen drive e importação em outro computador. |
 
 **Ainda em desenvolvimento:** enviar o orçamento pelo WhatsApp e registrar a aprovação, abrir e encerrar a
-OS com a chave, registrar compras de peças e fazer backup pela tela.
+OS com a chave e registrar compras de peças.
 
 ## Veja funcionando
 
@@ -92,7 +94,7 @@ O assistente aparece só na primeira abertura. Tudo pode ser alterado depois em 
 
 | Passo | O que preencher |
 | --- | --- |
-| **1. Nome e logo** | O nome do programa (ex.: *Auto Center Silva*) e, se quiser, a logo (PNG, JPG, WEBP ou SVG, até 2 MB; PNG com fundo transparente fica melhor). Sem logo, o ícone usa as iniciais do nome. |
+| **1. Nome e logo** | Quem está trocando de computador clica em **Importar backup** nesta tela e pula o resto ([veja como](#backup-e-troca-de-computador)). Senão: o nome do programa (ex.: *Auto Center Silva*) e, se quiser, a logo (PNG, JPG, WEBP ou SVG, até 2 MB; PNG com fundo transparente fica melhor). Sem logo, o ícone usa as iniciais do nome. |
 | **2. Cores** | Uma combinação pronta ou duas cores livres: a principal (botões e destaques) e a do menu lateral. O contraste dos textos é ajustado sozinho. |
 | **3. Empresa e padrões** | Nome que vai no orçamento, CNPJ, WhatsApp, endereço, valor da hora, markup padrão das peças, validade do orçamento e garantia. |
 | **4. Senha** | *Sem senha* (o programa abre direto) ou *Proteger com senha* (pede a senha ao abrir e quando alguém clica em **Bloquear** no menu). |
@@ -138,6 +140,39 @@ fechar o programa. Os dados não são afetados.
 
 Para conferir: **Configurações → Atualizações** mostra a versão instalada e tem o botão **Verificar agora**.
 
+## Backup e troca de computador
+
+### Backup automático
+
+Todo dia, ao abrir o programa (e a cada 3 horas com ele aberto), é feito um backup em
+`Documentos\<nome do programa>\Backups\`. Ficam os 30 mais recentes; os mais antigos são apagados sozinhos.
+Em **Configurações → Backup** aparecem a data do último backup e os botões:
+
+| Botão | O que faz |
+| --- | --- |
+| **Fazer backup agora** | Cria um backup na pasta de backups. |
+| **Salvar cópia em…** | Salva o backup onde você escolher: pen drive, Google Drive, OneDrive… |
+| **Abrir pasta** | Abre a pasta de backups. |
+| **Restaurar backup…** | Substitui os dados deste computador pelos de um backup. |
+
+O backup é **um único arquivo** (`.oficina-backup`) com tudo: clientes, veículos, orçamentos, configurações,
+senha, logo e cores. Guarde uma cópia fora do computador de vez em quando.
+
+### Trocar de computador, passo a passo
+
+1. **No computador antigo:** abra **Configurações → Backup → Salvar cópia em…** e salve no pen drive
+   (ou numa pasta da nuvem).
+2. **No computador novo:** [instale o programa](#instalação-no-windows-passo-a-passo).
+3. Na primeira tela da configuração inicial, clique em **Importar backup** e escolha o arquivo.
+4. Confira o resumo (data do backup, nome da oficina, quantidade de clientes e orçamentos) e clique em
+   **Importar e reiniciar**.
+5. O programa reinicia já com tudo do computador antigo, inclusive nome, logo e cores. Se havia senha,
+   ela continua a mesma.
+
+Também dá para importar depois, em **Configurações → Backup → Restaurar backup…**. Antes de substituir, o
+programa guarda uma cópia dos dados atuais (`dados.antes-da-importacao-<data>.db`). Um backup feito numa
+versão mais nova do programa é recusado: atualize o computador novo antes de importar.
+
 ## Onde ficam os dados
 
 | O quê | Onde |
@@ -146,14 +181,12 @@ Para conferir: **Configurações → Atualizações** mostra a versão instalada
 | Logo e ícone gerado | `%APPDATA%\Gestão Oficina\marca\` |
 | Registro de erros (para suporte) | `%APPDATA%\Gestão Oficina\logs\main.log` |
 | PDFs dos orçamentos | `Documentos\<nome do programa>\Orçamentos\` |
+| Backups | `Documentos\<nome do programa>\Backups\` |
 
 Para abrir `%APPDATA%`, digite esse texto na barra de endereço do Explorador de Arquivos.
 
-Antes de uma atualização que muda o banco, o programa guarda uma cópia ao lado dele
-(`dados.antes-da-atualizacao-<data>.db`).
-
-**Backup manual** (enquanto o backup pela tela não fica pronto): feche o programa e copie o arquivo
-`dados.db` para um pen drive ou para a nuvem.
+Antes de uma atualização que muda o banco, ou de importar um backup, o programa guarda uma cópia ao lado
+dele (`dados.antes-da-atualizacao-<data>.db` ou `dados.antes-da-importacao-<data>.db`).
 
 ## Perguntas frequentes
 
@@ -162,7 +195,8 @@ Não há como recuperar a senha pelo programa. Peça ajuda a quem instalou o sis
 
 **Desinstalar apaga meus dados?**
 Não. Desinstale em *Configurações do Windows → Aplicativos → Gestão Oficina → Desinstalar*. A pasta
-`%APPDATA%\Gestão Oficina` continua lá; se você instalar de novo, tudo volta.
+`%APPDATA%\Gestão Oficina` continua lá; se você instalar de novo, tudo volta. Mesmo assim, faça um
+**Salvar cópia em…** antes, por garantia.
 
 **Posso mudar o nome, a logo ou as cores depois?**
 Sim, em **Configurações**. O menu, o ícone e os atalhos do Windows mudam ao salvar.

@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Upload } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { isHexColor } from '@shared/color'
 import type { AppSettings, BrandingView } from '@shared/settings'
@@ -69,7 +69,12 @@ export function SetupWizard({ settings, branding, onDone }: SetupWizardProps) {
 
           <FormError message={submit.error} />
 
-          {step === 0 && <NameAndLogoFields form={form} set={set} errors={submit.fields} />}
+          {step === 0 && (
+            <>
+              <NameAndLogoFields form={form} set={set} errors={submit.fields} />
+              <ImportBox />
+            </>
+          )}
           {step === 1 && <ColorFields form={form} set={set} errors={submit.fields} />}
           {step === 2 && (
             <div className="flex flex-col gap-6">
@@ -105,6 +110,28 @@ export function SetupWizard({ settings, branding, onDone }: SetupWizardProps) {
           </div>
         </div>
       </main>
+    </div>
+  )
+}
+
+/** Primeira tela: quem está trocando de computador importa o backup em vez de configurar do zero. */
+function ImportBox() {
+  const submit = useSubmit()
+  return (
+    <div className="mt-8 flex items-center gap-4 rounded-lg border border-line bg-white p-4">
+      <span className="grid size-10 flex-none place-items-center rounded-lg bg-bg text-muted">
+        <Upload size={19} aria-hidden="true" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="m-0 font-semibold">Já usa o programa em outro computador?</p>
+        <p className="m-0 text-[13px] text-muted">
+          Importe o backup do computador antigo e continue de onde parou, com clientes, orçamentos, logo e cores.
+        </p>
+        {submit.error && <p className="m-0 mt-1 text-[13px] font-semibold text-brand-text">{submit.error}</p>}
+      </div>
+      <Button onClick={() => void submit.run(() => call('backup:restore'))} disabled={submit.busy}>
+        Importar backup
+      </Button>
     </div>
   )
 }

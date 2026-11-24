@@ -3,6 +3,7 @@
  * Cada canal declara a entrada e a saída. O preload expõe `invoke` tipado a partir daqui,
  * e o main registra um handler para cada canal (validando a entrada com zod).
  */
+import type { BackupStatus, RestoreResult } from './backup'
 import type { DashboardData, DashboardQuery } from './dashboard'
 import type { DocumentListQuery, DocumentListResult, KeyTagView } from './documents'
 import type {
@@ -46,6 +47,11 @@ export interface IpcContract {
   'setup:save': { input: SetupInput; output: BrandingView }
   'auth:unlock': { input: { password: string }; output: BrandingView }
   'auth:lock': { input: void; output: BrandingView }
+  'backup:status': { input: void; output: BackupStatus }
+  'backup:create': { input: void; output: { path: string } }
+  'backup:saveAs': { input: void; output: { path: string } | null }
+  'backup:openFolder': { input: void; output: void }
+  'backup:restore': { input: void; output: RestoreResult }
   'updates:status': { input: void; output: UpdateStatus }
   'updates:check': { input: void; output: UpdateStatus }
   'updates:install': { input: void; output: void }

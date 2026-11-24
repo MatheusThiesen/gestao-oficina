@@ -57,7 +57,7 @@ export function runMigrations(db: Database.Database, migrationsDir: string, opti
   return result
 }
 
-function listMigrations(dir: string): { name: string; file: string }[] {
+export function listMigrations(dir: string): { name: string; file: string }[] {
   if (!existsSync(dir)) throw new Error(`Pasta de migrations não encontrada: ${dir}`)
   return readdirSync(dir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())

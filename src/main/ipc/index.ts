@@ -11,6 +11,7 @@ import { getVehicleDetail, saveCustomer, saveVehicle } from '../application/regi
 import { getBranding, saveSetup } from '../application/setup'
 import type { Container } from '../container'
 import { appPaths } from '../infra/paths'
+import { registerBackupHandlers } from './backup-handlers'
 import { handle, setLockCheck } from './register'
 import {
   unlockInput,
@@ -71,6 +72,8 @@ export function registerIpcHandlers(c: Container, onBrandingChanged: (appName: s
     await c.lock.unlock(unlockInput.parse(input).password)
     return getBranding(c)
   })
+  registerBackupHandlers(c)
+
   handle('updates:status', () => c.updates.current)
   handle('updates:check', () => c.updates.check())
   handle('updates:install', () => c.updates.install())

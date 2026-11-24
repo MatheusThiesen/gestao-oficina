@@ -14,6 +14,7 @@ import {
   QuoteDefaultsFields,
   WorkshopFields
 } from '@/branding/setup-fields'
+import { BackupPanel } from '@/components/backup-panel'
 import { Flash, FormError } from '@/components/flash'
 import { UpdatePanel } from '@/components/update-panel'
 import { PageHeader } from '@/components/layout/page-header'
@@ -117,7 +118,7 @@ function SettingsEditor({ settings, onSaved }: { settings: AppSettings; onSaved:
           <UpdatePanel />
         </Section>
         <Section title="Backup">
-          <p className="m-0 text-muted">Em construção.</p>
+          <BackupPanel />
         </Section>
       </div>
     </>
