@@ -1,10 +1,10 @@
 import { Car, UserPlus, X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { formatKm, formatPhone, maskDocumentInput, maskPhoneInput, parseInteger } from '@shared/format'
-import type { CustomerInput, VehicleInput } from '@shared/registry'
-import { isValidCnpj, isValidCpf, isValidPhone } from '@shared/validation'
+import { formatKm, formatPhone, parseInteger } from '@shared/format'
+import type { VehicleInput } from '@shared/registry'
 import { CustomerPicker } from '@/components/customer-picker'
+import { CustomerFields } from '@/components/forms/customer-fields'
 import { Field, FieldGrid } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Panel, PanelBody, PanelHeader } from '@/components/ui/panel'
@@ -52,8 +52,6 @@ export function CustomerVehiclePanel({ draft, update, errors, readOnly, locked }
 
   const setNewVehicle = (patch: Partial<VehicleInput>) =>
     update({ newVehicle: { ...(draft.newVehicle ?? emptyVehicle(draft.plate)), ...patch } })
-  const setNewCustomer = (patch: Partial<CustomerInput>) =>
-    update({ newCustomer: { ...(draft.newCustomer ?? emptyCustomer()), ...patch } })
 
   return (
     <Panel>
@@ -180,7 +178,14 @@ export function CustomerVehiclePanel({ draft, update, errors, readOnly, locked }
             onCancel={() => update({ newCustomer: null })}
             cancelLabel="Escolher cliente existente"
           >
-            <NewCustomerFields customer={draft.newCustomer} set={setNewCustomer} errors={errors} />
+            <CustomerFields
+              variant="compact"
+              idPrefix="q"
+              errorPrefix="customer."
+              value={draft.newCustomer}
+              onChange={(newCustomer) => update({ newCustomer })}
+              errors={errors}
+            />
           </NewBlock>
         )}
       </PanelBody>
@@ -211,61 +216,5 @@ function NewBlock(props: { icon: typeof Car; title: string; children: ReactNode;
       </div>
       {children}
     </section>
-  )
-}
-
-/** Nome, WhatsApp e CPF/CNPJ com máscara e conferência na hora (o tipo PF/PJ sai do documento). */
-function NewCustomerFields(props: {
-  customer: CustomerInput
-  set: (patch: Partial<CustomerInput>) => void
-  errors: Record<string, string>
-}) {
-  const { customer, set, errors } = props
-  const docDigits = (customer.document ?? '').replace(/\D/g, '')
-  const phoneDigits = (customer.whatsapp ?? '').replace(/\D/g, '')
-  const isPj = docDigits.length > 11
-  const docHint =
-    docDigits.length === 11
-      ? isValidCpf(docDigits)
-        ? 'CPF válido'
-        : 'CPF inválido'
-      : docDigits.length === 14
-        ? isValidCnpj(docDigits)
-          ? 'CNPJ válido'
-          : 'CNPJ inválido'
-        : null
-  const phoneHint = phoneDigits.length >= 10 && !isValidPhone(phoneDigits) ? 'Telefone inválido' : null
-
-  return (
-    <FieldGrid>
-      <Field label={isPj ? 'Razão social' : 'Nome'} htmlFor="q-cli-name" error={errors['customer.name']} className="col-span-2">
-        <Input id="q-cli-name" value={customer.name} onChange={(e) => set({ name: e.target.value })} />
-      </Field>
-      <Field label="WhatsApp" htmlFor="q-zap" error={errors['customer.whatsapp'] ?? phoneHint ?? undefined}>
-        <Input
-          id="q-zap"
-          inputMode="tel"
-          placeholder="(00) 00000-0000"
-          value={customer.whatsapp ?? ''}
-          onChange={(e) => set({ whatsapp: maskPhoneInput(e.target.value) })}
-        />
-      </Field>
-      <Field label="CPF ou CNPJ (opcional)" htmlFor="q-doc" error={errors['customer.document']}>
-        <Input
-          id="q-doc"
-          inputMode="numeric"
-          value={customer.document ?? ''}
-          onChange={(e) => {
-            const document = maskDocumentInput(e.target.value)
-            set({ document, type: document.replace(/\D/g, '').length > 11 ? 'PJ' : 'PF' })
-          }}
-        />
-        {docHint && !errors['customer.document'] && (
-          <span className={docHint.endsWith('inválido') ? 'text-[12px] text-brand-text' : 'text-[12px] text-[#17693a]'}>
-            {docHint}
-          </span>
-        )}
-      </Field>
-    </FieldGrid>
   )
 }
