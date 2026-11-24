@@ -98,7 +98,9 @@ O assistente aparece só na primeira abertura. Tudo pode ser alterado depois em 
 | **3. Empresa e padrões** | Nome que vai no orçamento, CNPJ, WhatsApp, endereço, valor da hora, markup padrão das peças, validade do orçamento e garantia. |
 | **4. Senha** | *Sem senha* (o programa abre direto) ou *Proteger com senha* (pede a senha ao abrir e quando alguém clica em **Bloquear** no menu). |
 
-Ao concluir, o programa abre no **Painel**.
+Ao concluir, o programa abre no **Painel** com um **tour rápido** (cerca de 1 minuto) que destaca as
+partes principais: novo orçamento, o dia da oficina, orçamentos e OS, clientes e veículos, chaves e
+configurações. Dá para pular (`Esc`) e rever depois em **Configurações → Ajuda → Rever o tour**.
 
 ## Uso no dia a dia
 

@@ -19,6 +19,8 @@ export interface Branding {
 
 export interface AppSettings {
   setupCompleted: boolean
+  /** O tour do primeiro acesso já foi visto (ou pulado). */
+  tourCompleted: boolean
   branding: Branding
   shop: ShopInfo
   hourlyRateCents: number
@@ -34,6 +36,7 @@ export const DEFAULT_APP_NAME = 'Gestão Oficina'
 
 export const DEFAULT_SETTINGS: AppSettings = {
   setupCompleted: false,
+  tourCompleted: false,
   branding: {
     appName: DEFAULT_APP_NAME,
     primaryColor: '#c8121a',
@@ -54,6 +57,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
 /** O que a tela recebe para aplicar a marca (logo já como data URL). */
 export interface BrandingView {
   setupCompleted: boolean
+  tourCompleted: boolean
   /** Há senha de acesso definida. */
   hasPassword: boolean
   /** O app está bloqueado esperando a senha. */

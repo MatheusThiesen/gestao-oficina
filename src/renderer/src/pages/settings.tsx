@@ -1,4 +1,4 @@
-import { Save } from 'lucide-react'
+import { Compass, Save } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { isHexColor } from '@shared/color'
 import type { AppSettings } from '@shared/settings'
@@ -116,6 +116,20 @@ function SettingsEditor({ settings, onSaved }: { settings: AppSettings; onSaved:
         </Section>
         <Section title="Atualizações">
           <UpdatePanel />
+        </Section>
+        <Section title="Ajuda">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="m-0 text-muted">Reveja o tour que mostra onde fica cada parte do programa.</p>
+            <Button
+              onClick={async () => {
+                await call('tour:setCompleted', { completed: false })
+                reloadBranding()
+              }}
+            >
+              <Compass size={15} aria-hidden="true" />
+              Rever o tour
+            </Button>
+          </div>
         </Section>
         <Section title="Backup">
           <BackupPanel />

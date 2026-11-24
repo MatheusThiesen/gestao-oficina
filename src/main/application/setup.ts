@@ -21,6 +21,7 @@ export async function getBranding(deps: SetupDeps): Promise<BrandingView> {
   const s = await deps.settings.get()
   return {
     setupCompleted: s.setupCompleted,
+    tourCompleted: s.tourCompleted,
     appName: s.branding.appName,
     primaryColor: s.branding.primaryColor,
     sidebarColor: s.branding.sidebarColor,
@@ -109,4 +110,11 @@ export async function saveSetup(deps: SetupDeps, input: SetupInput): Promise<App
   await deps.settings.save(next)
   await deps.keyTags.ensureCount(next.keyTagCount)
   return next
+}
+
+/** Marca o tour do primeiro acesso como visto (concluído ou pulado), ou volta a mostrar. */
+export async function setTourCompleted(deps: SetupDeps, completed: boolean): Promise<BrandingView> {
+  const current = await deps.settings.get()
+  await deps.settings.save({ ...current, tourCompleted: completed })
+  return getBranding(deps)
 }

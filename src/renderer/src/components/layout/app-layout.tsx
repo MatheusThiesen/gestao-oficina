@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom'
+import { FirstRunTour } from '@/components/tour/first-run-tour'
 import { useGlobalShortcuts } from '@/hooks/use-shortcuts'
 import { Sidebar } from './sidebar'
 
@@ -13,6 +14,7 @@ export function AppLayout() {
           <Outlet />
         </div>
       </main>
+      <FirstRunTour />
     </div>
   )
 }

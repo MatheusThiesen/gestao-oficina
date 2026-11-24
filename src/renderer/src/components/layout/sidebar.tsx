@@ -45,6 +45,7 @@ export function Sidebar() {
 
       <div className="px-3 pb-3">
         <Link
+          data-tour="new-quote"
           to="/orcamentos/novo"
           className="flex h-9 items-center gap-2 whitespace-nowrap rounded-md bg-brand px-3 font-semibold text-brand-fg shadow-[0_1px_0_rgba(255,255,255,0.15)_inset] hover:bg-brand-hover hover:no-underline"
         >
@@ -59,6 +60,7 @@ export function Sidebar() {
           <div key={i} className={cn('flex flex-col py-1.5', i > 0 && 'border-t border-side-border')}>
             {group.map((item) => (
               <NavLink
+                data-tour={`nav-${item.icon}`}
                 key={item.to}
                 to={item.to}
                 end={item.end}

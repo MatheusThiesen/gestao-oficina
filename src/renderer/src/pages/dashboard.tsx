@@ -105,7 +105,7 @@ export function DashboardPage() {
 
 function TodayStrip({ today }: { today: DashboardData['today'] }) {
   return (
-    <section aria-label="Hoje" className="mb-4 grid grid-cols-4 overflow-hidden rounded-lg border border-line bg-panel max-[980px]:grid-cols-2">
+    <section aria-label="Hoje" data-tour="today" className="mb-4 grid grid-cols-4 overflow-hidden rounded-lg border border-line bg-panel max-[980px]:grid-cols-2">
       <TodayItem
         icon={CarFront}
         label="Na oficina"

@@ -47,6 +47,7 @@ export interface IpcContract {
   'settings:get': { input: void; output: AppSettings }
   'branding:get': { input: void; output: BrandingView }
   'setup:save': { input: SetupInput; output: BrandingView }
+  'tour:setCompleted': { input: { completed: boolean }; output: BrandingView }
   'auth:unlock': { input: { password: string }; output: BrandingView }
   'auth:lock': { input: void; output: BrandingView }
   'backup:status': { input: void; output: BackupStatus }

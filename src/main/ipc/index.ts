@@ -8,7 +8,7 @@ import { listDocuments } from '../application/list-documents'
 import { generateQuotePdf, pdfFolder } from '../application/quote-pdf'
 import { calculateQuote, getQuoteView, saveQuoteDraft } from '../application/quotes'
 import { getVehicleDetail, saveCustomer, saveVehicle } from '../application/registry'
-import { getBranding, saveSetup } from '../application/setup'
+import { getBranding, saveSetup, setTourCompleted } from '../application/setup'
 import type { Container } from '../container'
 import { appPaths } from '../infra/paths'
 import { registerBackupHandlers } from './backup-handlers'
@@ -71,6 +71,7 @@ export function registerIpcHandlers(c: Container, onBrandingChanged: (appName: s
   setLockCheck(() => c.lock.isLocked)
 
   handle('branding:get', () => getBranding(c))
+  handle('tour:setCompleted', (input) => setTourCompleted(c, z.object({ completed: z.boolean() }).parse(input).completed))
   handle('auth:unlock', async (input) => {
     await c.lock.unlock(unlockInput.parse(input).password)
     return getBranding(c)
