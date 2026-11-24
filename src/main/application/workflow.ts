@@ -64,6 +64,7 @@ export async function sendQuote(deps: WorkflowDeps, id: number, now = new Date()
     `válido até ${formatDate(validUntil)}. O PDF vai em anexo. Para aprovar, é só responder esta mensagem.`
   return {
     pdfPath: path,
+    message,
     whatsappUrl: isValidPhone(phone) ? `https://wa.me/55${phone}?text=${encodeURIComponent(message)}` : null
   }
 }

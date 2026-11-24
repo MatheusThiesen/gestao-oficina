@@ -1,4 +1,5 @@
-import { shell } from 'electron'
+import { resolve, sep } from 'node:path'
+import { clipboard, shell } from 'electron'
 import { z } from 'zod'
 import {
   approveQuote,
@@ -12,6 +13,8 @@ import {
   reopenQuote,
   sendQuote
 } from '../application/workflow'
+import { ValidationError } from '../application/errors'
+import { pdfFolder } from '../application/quote-pdf'
 import type { Container } from '../container'
 import { handle } from './register'
 
@@ -23,14 +26,23 @@ const keyTag = z.number().int().positive().nullable()
 export function registerWorkflowHandlers(c: Container): void {
   handle('workflow:keyTags', () => keyTagOptions(c))
 
-  handle('workflow:send', async (input) => {
-    const result = await sendQuote(c, idOnly.parse(input).id)
-    if (process.env['GESTAO_NO_OPEN'] !== '1') {
-      // Mostra o PDF na pasta (para anexar) e abre a conversa no WhatsApp com a mensagem pronta.
-      shell.showItemInFolder(result.pdfPath)
-      if (result.whatsappUrl) await shell.openExternal(result.whatsappUrl)
-    }
-    return result
+  // Enviar não abre nada sozinho: a tela oferece abrir o WhatsApp, copiar a mensagem ou mostrar o PDF.
+  handle('workflow:send', (input) => sendQuote(c, idOnly.parse(input).id))
+
+  handle('share:openWhatsapp', async (input) => {
+    const { url } = z.object({ url: z.string().max(4000) }).parse(input)
+    if (!url.startsWith('https://wa.me/')) throw new ValidationError('Link do WhatsApp inválido.')
+    await shell.openExternal(url)
+  })
+  handle('share:copy', (input) => {
+    clipboard.writeText(z.object({ text: z.string().max(4000) }).parse(input).text)
+  })
+  handle('share:showPdf', async (input) => {
+    const { path } = z.object({ path: z.string().max(1000) }).parse(input)
+    // Só mostra arquivos da pasta de orçamentos do programa.
+    const folder = resolve(pdfFolder(await c.settings.get()))
+    if (!resolve(path).startsWith(folder + sep)) throw new ValidationError('Arquivo fora da pasta de orçamentos.')
+    shell.showItemInFolder(path)
   })
 
   handle('workflow:approve', (input) =>

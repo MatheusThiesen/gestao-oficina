@@ -1,8 +1,8 @@
-import { Ban, Check, CircleCheckBig, KeyRound, PackageCheck, RotateCcw, Send, ThumbsDown, Undo2, Wrench } from 'lucide-react'
+import { Ban, Check, CircleCheckBig, Copy, FileText, KeyRound, MessageCircle, PackageCheck, RotateCcw, Send, ThumbsDown, Undo2, Wrench } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { formatDate, formatKeyTag, formatKm, parseInteger } from '@shared/format'
 import { APPROVAL_CHANNEL_LABEL, type ApprovalChannel, type QuoteView } from '@shared/quotes'
-import type { WorkflowAction } from '@shared/workflow'
+import type { SendResult, WorkflowAction } from '@shared/workflow'
 import { FormError } from '@/components/flash'
 import { Button } from '@/components/ui/button'
 import { Field } from '@/components/ui/field'
@@ -100,6 +100,7 @@ const ACTION_META: Record<WorkflowAction, { label: string; icon: typeof Send }> 
 /** Botões de status do orçamento/OS. O primeiro permitido é a ação principal. */
 export function WorkflowActions({ quote, persist, readOnly, onDone }: ActionsProps) {
   const [dialog, setDialog] = useState<DialogKind>(null)
+  const [sent, setSent] = useState<{ id: number; result: SendResult } | null>(null)
   const submit = useSubmit()
   // Orçamento novo (ainda não salvo) pode ser enviado ou aprovado: salva primeiro.
   const actions: WorkflowAction[] = quote ? quote.actions : ['send', 'approve']
@@ -119,8 +120,9 @@ export function WorkflowActions({ quote, persist, readOnly, onDone }: ActionsPro
     const id = await ensureSaved()
     if (!id) return
     if (action === 'send') {
+      // Nada abre sozinho: a janela seguinte oferece WhatsApp, copiar a mensagem ou mostrar o PDF.
       const result = await submit.run(() => call('workflow:send', { id }))
-      if (result) onDone(result.whatsappUrl ? 'Enviado: anexe o PDF na conversa do WhatsApp.' : 'Enviado. O cliente não tem WhatsApp: mande o PDF por outro meio.', id)
+      if (result) setSent({ id, result })
     } else if (action === 'reopen') {
       if (await submit.run(async () => (await call('workflow:reopen', { id }), true))) onDone('Orçamento reaberto.', id)
     } else if (action === 'markReady') {
@@ -152,6 +154,15 @@ export function WorkflowActions({ quote, persist, readOnly, onDone }: ActionsPro
       })}
       {submit.error && <span className="basis-full text-right text-[13px] text-brand-text">{submit.error}</span>}
 
+      {sent && (
+        <SentDialog
+          result={sent.result}
+          onClose={() => {
+            onDone('Orçamento aguardando aprovação.', sent.id)
+            setSent(null)
+          }}
+        />
+      )}
       {dialog === 'approve' && (
         <ApproveDialog quote={quote} ensureSaved={ensureSaved} onClose={() => setDialog(null)} onDone={onDone} />
       )}
@@ -164,6 +175,50 @@ export function WorkflowActions({ quote, persist, readOnly, onDone }: ActionsPro
 }
 
 type DialogProps = { quote: QuoteView; onClose: () => void; onDone: (message: string, id: number) => void }
+
+/** Depois de enviar: o PDF está pronto e o usuário escolhe como mandar ao cliente. */
+function SentDialog({ result, onClose }: { result: SendResult; onClose: () => void }) {
+  const [copied, setCopied] = useState(false)
+  return (
+    <Modal
+      open
+      title="Orçamento pronto para enviar"
+      onClose={onClose}
+      footer={<Button onClick={onClose}>Fechar</Button>}
+    >
+      <p className="m-0 text-[13.5px] text-muted">
+        O PDF foi gerado e o orçamento está aguardando aprovação. Escolha como mandar para o cliente:
+      </p>
+      <blockquote className="m-0 rounded-md border border-line bg-bg/60 px-3 py-2 text-[13px] leading-relaxed whitespace-pre-line">
+        {result.message}
+      </blockquote>
+      <div className="flex flex-col gap-2">
+        {result.whatsappUrl ? (
+          <Button variant="primary" className="h-9 justify-start" onClick={() => void call('share:openWhatsapp', { url: result.whatsappUrl! })}>
+            <MessageCircle size={16} aria-hidden="true" />
+            Abrir conversa no WhatsApp (mensagem pronta)
+          </Button>
+        ) : (
+          <p className="m-0 text-[12.5px] text-muted">O cliente não tem WhatsApp cadastrado: mande o PDF por outro meio.</p>
+        )}
+        <Button
+          className="h-9 justify-start"
+          onClick={async () => {
+            await call('share:copy', { text: result.message })
+            setCopied(true)
+          }}
+        >
+          <Copy size={16} aria-hidden="true" />
+          {copied ? 'Mensagem copiada' : 'Copiar mensagem'}
+        </Button>
+        <Button className="h-9 justify-start" onClick={() => void call('share:showPdf', { path: result.pdfPath })}>
+          <FileText size={16} aria-hidden="true" />
+          Mostrar o PDF na pasta (para anexar)
+        </Button>
+      </div>
+    </Modal>
+  )
+}
 
 /** Seleção de chave: sugere a menor livre; dá para escolher outra ou nenhuma. */
 function KeyTagSelect({ value, onChange, error }: { value: string; onChange: (v: string) => void; error?: string }) {

@@ -27,6 +27,8 @@ export interface KeyTagOptions {
 
 export interface SendResult {
   pdfPath: string
+  /** Mensagem pronta para o cliente (para copiar ou abrir no WhatsApp). */
+  message: string
   /** Link do WhatsApp com a mensagem pronta (null se o cliente não tem WhatsApp). */
   whatsappUrl: string | null
 }

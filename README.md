@@ -28,7 +28,7 @@ a usar essa identidade: o menu, o ícone e os atalhos do Windows e o PDF que vai
 | Tela | O que dá para fazer |
 | --- | --- |
 | **Painel** | Ver o dia (carros na oficina, prontos para entregar, orçamentos esperando resposta) e analisar a semana ou o mês: faturamento, lucro bruto, margem, ticket médio, taxa de aprovação e gráfico de faturamento × lucro. |
-| **Orçamentos e OS** | Buscar por placa, cliente, número ou número da chave; filtrar por status. Levar cada orçamento pelas etapas: enviar pelo WhatsApp, registrar a aprovação, abrir a OS com a chave, marcar como pronto e entregar (ou recusar, reabrir e cancelar). |
+| **Orçamentos e OS** | Buscar por placa, cliente, número ou número da chave; filtrar por status. Levar cada orçamento pelas etapas: enviar (WhatsApp, mensagem pronta ou PDF), registrar a aprovação, abrir a OS com a chave, marcar como pronto e entregar (ou recusar, reabrir e cancelar). |
 | **Orçamento** | Começar pela placa (carro conhecido traz o dono e o km; carro novo é cadastrado ali mesmo, escolhendo marca e modelo da Tabela FIPE com a logo da marca), lançar peças e mão de obra com sugestões do cadastro, aplicar desconto, escolher a garantia (ou "sem garantia") e ver o custo e o lucro internos. Gerar o PDF para o cliente. |
 | **Clientes** | Cadastro com CPF/CNPJ e WhatsApp validados, carros de cada cliente e total gasto. |
 | **Veículos** | Ficha com placa Mercosul, histórico de serviços, garantias vigentes e próxima troca de óleo. Troca de dono sem perder o histórico. |
@@ -126,7 +126,7 @@ No alto do orçamento, uma linha do tempo mostra a etapa atual, e os botões mud
 
 | Etapa | O que dá para fazer |
 | --- | --- |
-| **Rascunho** | **Enviar para aprovação**: gera o PDF, mostra o arquivo na pasta e abre a conversa do cliente no WhatsApp com a mensagem pronta (é só anexar o PDF). Ou **Registrar aprovação** direto, se o cliente aprovou no balcão. |
+| **Rascunho** | **Enviar para aprovação**: gera o PDF e mostra a mensagem pronta para o cliente, com três opções (nada abre sozinho): **abrir a conversa no WhatsApp**, **copiar a mensagem** ou **mostrar o PDF na pasta** para anexar. Ou **Registrar aprovação** direto, se o cliente aprovou no balcão. |
 | **Aguardando aprovação** | **Registrar aprovação** (quem aprovou e como: balcão, telefone ou WhatsApp), **Recusado pelo cliente** (com motivo) ou **Reenviar**. Passada a validade, vira *Expirado*. |
 | **Aprovado** | Ao aprovar, a OS já pode ser aberta, com a **chave sugerida** (a menor livre). Se o carro ainda não chegou, abra a OS depois com **Abrir OS**. O orçamento aprovado fica guardado como foi aprovado e não muda mais. |
 | **Em execução** | **Marcar como pronto** ou **Cancelar OS** (com motivo). |

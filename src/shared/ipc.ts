@@ -67,6 +67,9 @@ export interface IpcContract {
   'vehicleCatalog:logo': { input: { brand: string }; output: string | null }
   'workflow:keyTags': { input: void; output: KeyTagOptions }
   'workflow:send': { input: { id: number }; output: SendResult }
+  'share:openWhatsapp': { input: { url: string }; output: void }
+  'share:copy': { input: { text: string }; output: void }
+  'share:showPdf': { input: { path: string }; output: void }
   'workflow:approve': { input: ApproveInput; output: { workOrderNumber: number | null } }
   'workflow:refuse': { input: { id: number; reason?: string }; output: void }
   'workflow:reopen': { input: { id: number }; output: void }
