@@ -1,0 +1,250 @@
+@import 'tailwindcss';
+
+@font-face {
+  font-family: 'Barlow';
+  src: url('./assets/fonts/Barlow-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Barlow';
+  src: url('./assets/fonts/Barlow-SemiBold.ttf') format('truetype');
+  font-weight: 600 700;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Saira';
+  src: url('./assets/fonts/Saira-Italic.ttf') format('truetype');
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  src: url('./assets/fonts/BarlowCondensed-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-display: block;
+}
+
+/* Cores do protótipo (referencias/prototipo.html :root) mapeadas para o tema do Tailwind/shadcn. */
+@theme {
+  --color-bg: #f3f4f5;
+  --color-panel: #ffffff;
+  --color-line: #dfe1e4;
+  --color-line-strong: #b9bdc2;
+  --color-ink: #17191c;
+  --color-muted: #5d636a;
+  --color-side: #1f2124;
+  --color-side-hover: #2a2d31;
+  --color-side-text: #c9cdd2;
+  --color-side-foot: #8d939a;
+  --color-side-border: #2f3236;
+  --color-brand: #c8121a;
+  --color-brand-hover: #a70f16;
+  --color-brand-text: #b10f17;
+  --color-brand-icon: #ff4a52;
+  --color-brand-fg: #ffffff;
+  --color-side-strong: #ffffff;
+  --color-hover: #f6f7f8;
+  --color-th: #fafafa;
+  --color-icon-hover: #eceef0;
+  --color-focus: #1d4ed8;
+
+  /* Séries dos gráficos: fixas (validadas para daltonismo), não seguem a cor da marca. */
+  --color-series-1: #2a78d6;
+  --color-series-2: #eb6834;
+  --color-grid: #e9eaec;
+
+  /* nomes do shadcn */
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-ink);
+  --color-primary: var(--color-brand);
+  --color-primary-foreground: #ffffff;
+  --color-border: var(--color-line);
+  --color-input: var(--color-line-strong);
+  --color-ring: var(--color-focus);
+  --color-muted-foreground: var(--color-muted);
+
+  --radius: 4px;
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 5px;
+
+  --font-sans: 'Barlow', 'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --font-display: 'Saira', 'Barlow', sans-serif;
+  --font-plate: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+  }
+  body {
+    font-family: var(--font-sans);
+    font-size: 14.5px;
+    line-height: 1.45;
+    color: var(--color-ink);
+    background: var(--color-bg);
+    -webkit-font-smoothing: antialiased;
+  }
+  a {
+    color: var(--color-brand-text);
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 1px;
+  }
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@layer components {
+  .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* Placa Mercosul */
+  .plate {
+    display: inline-flex;
+    flex-direction: column;
+    vertical-align: middle;
+    background: #fff;
+    border: 1.5px solid #17191c;
+    border-radius: 3px;
+    overflow: hidden;
+    min-width: 74px;
+    line-height: 1;
+  }
+  .plate .pl-band {
+    background: #1b3f94;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    font-weight: 700;
+    font-size: 6px;
+    letter-spacing: 0.25em;
+    text-align: center;
+    padding: 1.5px 0 1px;
+  }
+  .plate .pl-num {
+    font-family: var(--font-plate);
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    text-align: center;
+    padding: 2px 6px 1px;
+    color: #17191c;
+  }
+  .plate.lg {
+    min-width: 150px;
+    border-width: 2px;
+    border-radius: 5px;
+  }
+  .plate.lg .pl-band {
+    font-size: 9px;
+    padding: 3px 0 2px;
+  }
+  .plate.lg .pl-num {
+    font-size: 30px;
+    padding: 3px 12px 2px;
+  }
+
+  /* Tags de status */
+  .tag {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    line-height: 1.45;
+    white-space: nowrap;
+  }
+  .t-rascunho { background: #eceef0; color: #3d4247; }
+  .t-aguardando { background: #fff3d6; color: #7a5200; }
+  .t-aprovado { background: #e1f3e8; color: #17693a; }
+  .t-execucao { background: #e3ecfa; color: #1f4f9c; }
+  .t-pronto { background: #e1f3e8; color: #17693a; }
+  .t-entregue { background: #f0f1f2; color: #5d636a; }
+  .t-recusado { background: #fde6e7; color: #a10e15; }
+  .t-peca { background: #eceef0; color: #3d4247; }
+  .t-mo { background: #f1ebfa; color: #5b3a96; }
+}
+
+@layer components {
+  /* Faixa inclinada da marca (logo e site): vermelho com cortes diagonais. */
+  .brand-stripe {
+    height: 6px;
+    background: repeating-linear-gradient(
+      -60deg,
+      var(--color-brand) 0 14px,
+      transparent 14px 18px
+    );
+  }
+
+  /* Chaveiro numerado (peça impressa em 3D) */
+  .keytag {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 18px 8px 10px;
+    border-radius: 10px 10px 14px 14px;
+    background: #fff;
+    border: 1px solid var(--color-line);
+    text-align: center;
+  }
+  .keytag::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    margin-left: -5px;
+    border-radius: 50%;
+    background: var(--color-bg);
+    box-shadow: inset 0 0 0 1.5px var(--color-line-strong);
+  }
+  .keytag .kt-num {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 800;
+    font-size: 26px;
+    line-height: 1;
+    color: var(--color-ink);
+  }
+  .keytag.in-use {
+    background: var(--color-side);
+    border-color: var(--color-side);
+    color: var(--color-side-text);
+  }
+  .keytag.in-use .kt-num {
+    color: var(--color-side-strong);
+  }
+  .keytag.in-use::before {
+    background: var(--color-brand);
+    box-shadow: none;
+  }
+
+  .kbd {
+    display: inline-block;
+    min-width: 18px;
+    padding: 0 4px;
+    border-radius: 3px;
+    border: 1px solid currentColor;
+    opacity: 0.85;
+    font-size: 11px;
+    line-height: 16px;
+    font-weight: 600;
+    text-align: center;
+  }
+}

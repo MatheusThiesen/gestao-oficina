@@ -1,0 +1,42 @@
+# Publica uma versão nova: suba "version" no package.json, faça commit e crie a tag.
+#   git tag v0.2.0 && git push origin v0.2.0
+# O instalador do Windows e o latest.yml vão para a Release da tag; os apps instalados baixam sozinhos.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # postinstall: prisma generate + SQLite compilado para o Electron
+      - run: npm ci
+
+      - name: Conferir versão da tag
+        shell: bash
+        run: |
+          PKG=$(node -p "require('./package.json').version")
+          if [ "v$PKG" != "${GITHUB_REF_NAME}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} diferente da versão do package.json (v$PKG)"; exit 1
+          fi
+
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+      - name: Gerar instalador e publicar na Release
+        run: npx electron-builder --win --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

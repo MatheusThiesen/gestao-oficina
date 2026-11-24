@@ -1,0 +1,9 @@
+node_modules
+out
+dist
+*.db
+*.db-journal
+.DS_Store
+src/main/infra/prisma/generated
+prisma/dev.db*
+*.tsbuildinfo

@@ -1,0 +1,236 @@
+// Convenções:
+//   *Cents  = dinheiro em centavos (Int)
+//   *Bp     = percentual em centésimos de ponto (Int): 4000 = 40,00%
+//   *Milli  = quantidade em milésimos (Int): 1500 = 1,5
+// Status e tipos são String (SQLite não tem enum); os valores válidos ficam em src/shared/status.ts.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/main/infra/prisma/generated"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  type      String   @default("PF") // PF | PJ
+  name      String
+  document  String?  @unique // CPF/CNPJ só com dígitos
+  whatsapp  String? // só dígitos, com DDD
+  email     String?
+  address   String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ownerships VehicleOwnership[]
+  quotes     Quote[]
+
+  @@index([name])
+}
+
+model Vehicle {
+  id        Int      @id @default(autoincrement())
+  plate     String   @unique // maiúsculas, sem hífen
+  brand     String?
+  model     String?
+  year      Int?
+  color     String?
+  fuel      String?
+  vin       String?
+  currentKm Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ownerships VehicleOwnership[]
+  quotes     Quote[]
+  workOrders WorkOrder[]
+}
+
+model VehicleOwnership {
+  id         Int       @id @default(autoincrement())
+  vehicleId  Int
+  customerId Int
+  startedAt  DateTime  @default(now())
+  endedAt    DateTime?
+
+  vehicle  Vehicle  @relation(fields: [vehicleId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@index([vehicleId, endedAt])
+  @@index([customerId])
+}
+
+model Part {
+  id              Int      @id @default(autoincrement())
+  code            String?  @unique
+  name            String
+  brand           String?
+  lastCostCents   Int      @default(0)
+  defaultMarkupBp Int?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  quoteItems    QuoteItem[]
+  purchaseItems PartPurchaseItem[]
+
+  @@index([name])
+}
+
+model Service {
+  id                Int      @id @default(autoincrement())
+  name              String
+  defaultHoursMilli Int?
+  fixedPriceCents   Int?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  quoteItems QuoteItem[]
+}
+
+model Quote {
+  id                 Int       @id @default(autoincrement())
+  number             Int
+  version            Int       @default(1)
+  previousId         Int?      @unique
+  customerId         Int
+  vehicleId          Int
+  entryKm            Int?
+  status             String    @default("RASCUNHO")
+  validityDays       Int
+  validUntil         DateTime
+  paymentMethod      String?
+  expectedDeliveryAt DateTime?
+  hourlyRateCents    Int
+  discountBp         Int       @default(0)
+  warrantyDays       Int
+  notes              String? // observações para o cliente (diagnóstico)
+  internalNotes      String?
+  totalCents         Int       @default(0)
+  sentAt             DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  previous  Quote?         @relation("QuoteVersions", fields: [previousId], references: [id])
+  next      Quote?         @relation("QuoteVersions")
+  customer  Customer       @relation(fields: [customerId], references: [id])
+  vehicle   Vehicle        @relation(fields: [vehicleId], references: [id])
+  items     QuoteItem[]
+  approval  QuoteApproval?
+  workOrder WorkOrder?
+
+  @@unique([number, version])
+  @@index([status])
+  @@index([vehicleId])
+}
+
+model QuoteItem {
+  id             Int    @id @default(autoincrement())
+  quoteId        Int
+  type           String // PECA | MAO_DE_OBRA
+  description    String
+  partId         Int?
+  serviceId      Int?
+  quantityMilli  Int
+  unitCostCents  Int? // só peça; copiado do cadastro
+  markupBp       Int? // só peça; copiado do cadastro
+  unitPriceCents Int
+  totalCents     Int
+  warrantyDays   Int?
+  position       Int
+
+  quote   Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  part    Part?    @relation(fields: [partId], references: [id])
+  service Service? @relation(fields: [serviceId], references: [id])
+
+  @@index([quoteId, position])
+}
+
+model QuoteApproval {
+  id         Int      @id @default(autoincrement())
+  quoteId    Int      @unique
+  approvedAt DateTime
+  channel    String // BALCAO | TELEFONE | WHATSAPP
+  approvedBy String
+  snapshot   String // JSON do orçamento como foi aprovado
+
+  quote Quote @relation(fields: [quoteId], references: [id])
+}
+
+model WorkOrder {
+  id          Int       @id @default(autoincrement())
+  number      Int       @unique
+  quoteId     Int       @unique // versão aprovada vigente
+  vehicleId   Int
+  status      String    @default("EM_EXECUCAO")
+  entryKm     Int?
+  keyTagId    Int?
+  openedAt    DateTime  @default(now())
+  readyAt     DateTime?
+  deliveredAt DateTime?
+  canceledAt  DateTime?
+
+  quote         Quote              @relation(fields: [quoteId], references: [id])
+  vehicle       Vehicle            @relation(fields: [vehicleId], references: [id])
+  keyTag        KeyTag?            @relation(fields: [keyTagId], references: [id])
+  purchaseItems PartPurchaseItem[]
+
+  @@index([status])
+  @@index([keyTagId, status])
+}
+
+model KeyTag {
+  id     Int     @id @default(autoincrement())
+  number Int     @unique
+  active Boolean @default(true)
+
+  workOrders WorkOrder[]
+}
+
+model Supplier {
+  id        Int      @id @default(autoincrement())
+  name      String
+  document  String?  @unique
+  phone     String?
+  createdAt DateTime @default(now())
+
+  purchases PartPurchase[]
+}
+
+model PartPurchase {
+  id            Int      @id @default(autoincrement())
+  supplierId    Int
+  invoiceNumber String?
+  purchasedAt   DateTime
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  supplier Supplier           @relation(fields: [supplierId], references: [id])
+  items    PartPurchaseItem[]
+
+  @@index([purchasedAt])
+}
+
+model PartPurchaseItem {
+  id            Int  @id @default(autoincrement())
+  purchaseId    Int
+  partId        Int
+  quantityMilli Int
+  unitCostCents Int
+  workOrderId   Int?
+
+  purchase  PartPurchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  part      Part         @relation(fields: [partId], references: [id])
+  workOrder WorkOrder?   @relation(fields: [workOrderId], references: [id])
+
+  @@index([workOrderId])
+}
+
+/// Configurações chave/valor (valor em JSON).
+model Setting {
+  key   String @id
+  value String
+}

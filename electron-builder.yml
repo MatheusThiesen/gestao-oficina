@@ -1,0 +1,51 @@
+# Instalador e atualização automática.
+# Para publicar em outro repositório, troque owner/repo em `publish`.
+appId: br.com.gestaooficina.app
+# Sem acento no empacotamento: no macOS o "ã" é gravado em formas Unicode diferentes no nome do app e
+# dos processos auxiliares, e o Electron cai ao iniciar ("Unable to find helper app").
+# O nome visto pelo cliente é o escolhido na configuração inicial; atalhos e desinstalação usam o nome com acento.
+productName: Gestao Oficina
+executableName: GestaoOficina
+copyright: Gestão Oficina
+directories:
+  output: dist
+  buildResources: build
+files:
+  - out/**
+  - package.json
+  - '!**/*.map'
+extraResources:
+  # O app aplica estes .sql ao abrir (runner próprio; não há CLI do Prisma no instalador).
+  - from: prisma/migrations
+    to: migrations
+    filter: ['**/*.sql']
+asarUnpack:
+  - '**/*.node'
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: build/icon.png
+  # Nome sem espaços/acentos: o latest.yml do updater aponta para este arquivo.
+  artifactName: Gestao-Oficina-Setup-${version}.${ext}
+
+nsis:
+  oneClick: true
+  perMachine: false
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: Gestão Oficina
+  uninstallDisplayName: Gestão Oficina
+  deleteAppDataOnUninstall: false
+
+mac:
+  target: dmg
+  icon: build/icon.png
+  category: public.app-category.business
+
+publish:
+  provider: github
+  owner: MatheusThiesen
+  repo: gestao-oficina
+  releaseType: release
