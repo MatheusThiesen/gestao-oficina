@@ -38,8 +38,10 @@ export class BackupService {
     const latest = files
       .map((name) => ({ name, at: statSync(join(folder, name)).mtime }))
       .sort((a, b) => b.at.getTime() - a.at.getTime())[0]
+    const appFolder = basename(dirname(folder))
     return {
       folder,
+      folderLabel: `Documentos › ${appFolder} › Backups`,
       lastBackupAt: latest?.at.toISOString() ?? null,
       lastBackupFile: latest?.name ?? null,
       autoBackups: files.filter((f) => f.startsWith('backup-automatico-')).length

@@ -49,7 +49,7 @@ export function BackupPanel() {
             )}
           </p>
           <p className="m-0 truncate text-[12.5px] text-muted" title={status?.folder}>
-            Automático todo dia, guardando os últimos 30, em {status?.folder ?? '…'}
+            Automático todo dia, guardando os últimos 30, em {status?.folderLabel ?? '…'}
           </p>
         </div>
         <Flash message={flash} />
