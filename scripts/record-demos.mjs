@@ -156,7 +156,7 @@ async function finish(app, page, name) {
 // 2. Painel
 {
   const { app, page } = await launch(true)
-  await page.waitForSelector('text=Análise do mês')
+  await page.waitForSelector('text=Resultado do mês')
   await pause(page, 1200)
   const columns = page.locator('svg[role=img]').first().locator('rect[fill=transparent]')
   for (const i of [11, 14, 17]) {

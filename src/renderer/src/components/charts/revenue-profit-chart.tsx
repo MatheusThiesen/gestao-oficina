@@ -10,19 +10,22 @@ const SERIES = [
   { key: 'profitCents', label: 'Lucro bruto', color: 'var(--color-series-2)' }
 ] as const
 
-const MARGIN = { top: 12, right: 8, bottom: 26, left: 64 }
+const MARGIN = { top: 12, right: 8, bottom: 26, left: 78 }
 const BAR_MAX = 24
-const PAIR_GAP = 2
 
 interface Props {
   points: MoneyPoint[]
   height?: number
   /** Título acessível do gráfico. */
   title: string
+  legend?: boolean
 }
 
-/** Colunas lado a lado: faturamento × lucro bruto, um eixo só (mesma unidade). */
-export function RevenueProfitChart({ points, height = 240, title }: Props) {
+/**
+ * Faturamento × lucro bruto num eixo só (mesma unidade). O lucro é parte do faturamento,
+ * então é desenhado dentro da coluna do faturamento, mais estreito, com anel na cor do fundo.
+ */
+export function RevenueProfitChart({ points, height = 240, title, legend = true }: Props) {
   const box = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState(640)
   const [hover, setHover] = useState<number | null>(null)
@@ -43,17 +46,18 @@ export function RevenueProfitChart({ points, height = 240, title }: Props) {
   const plotW = Math.max(10, width - MARGIN.left - MARGIN.right)
   const plotH = height - MARGIN.top - MARGIN.bottom
   const band = plotW / Math.max(1, points.length)
-  const bar = Math.min(BAR_MAX, Math.max(2, (band * 0.7 - PAIR_GAP) / 2))
+  const bar = Math.min(BAR_MAX, Math.max(3, band * 0.62))
+  const inner = Math.max(2, bar * 0.5)
   const y = (v: number) => MARGIN.top + plotH - ((v - yMin) / (yMax - yMin)) * plotH
   const zero = y(0)
-  // Rótulos do eixo X sem encavalar: no máximo ~1 a cada 44 px.
-  const labelEvery = Math.max(1, Math.ceil(44 / band))
+  // Rótulos do eixo X sem encavalar: no máximo ~1 a cada 48 px (no mês, de 5 em 5 dias).
+  const labelEvery = points.length > 14 ? Math.max(5, Math.ceil(48 / band)) : Math.max(1, Math.ceil(48 / band))
   const empty = values.every((v) => v === 0)
 
   return (
     <div>
       <div className="mb-2 flex items-center justify-between gap-3">
-        <ul className="m-0 flex list-none gap-4 p-0 text-[12.5px] text-muted" aria-label="Legenda">
+        <ul className={cn('m-0 flex list-none gap-4 p-0 text-[12.5px] text-muted', !legend && 'invisible')} aria-label="Legenda">
           {SERIES.map((s) => (
             <li key={s.key} className="flex items-center gap-1.5">
               <span className="size-2.5 rounded-sm" style={{ background: s.color }} aria-hidden="true" />
@@ -87,12 +91,20 @@ export function RevenueProfitChart({ points, height = 240, title }: Props) {
               const cx = MARGIN.left + band * i + band / 2
               return (
                 <g key={p.date}>
-                  {SERIES.map((s, si) => {
-                    const v = p[s.key]
-                    if (v === 0) return null
-                    const x = si === 0 ? cx - bar - PAIR_GAP / 2 : cx + PAIR_GAP / 2
-                    return <Column key={s.key} x={x} width={bar} y0={zero} y1={y(v)} color={s.color} dim={hover !== null && hover !== i} />
-                  })}
+                  {p.revenueCents !== 0 && (
+                    <Column x={cx - bar / 2} width={bar} y0={zero} y1={y(p.revenueCents)} color={SERIES[0].color} dim={hover !== null && hover !== i} />
+                  )}
+                  {p.profitCents !== 0 && (
+                    <Column
+                      x={cx - inner / 2}
+                      width={inner}
+                      y0={zero}
+                      y1={y(p.profitCents)}
+                      color={SERIES[1].color}
+                      dim={hover !== null && hover !== i}
+                      ring
+                    />
+                  )}
                   {i % labelEvery === 0 && (
                     <text x={cx} y={height - 8} textAnchor="middle" className="fill-muted text-[11px] tabular-nums">
                       {p.label}
@@ -127,8 +139,8 @@ export function RevenueProfitChart({ points, height = 240, title }: Props) {
   )
 }
 
-function Column(props: { x: number; width: number; y0: number; y1: number; color: string; dim: boolean }) {
-  const { x, width, y0, y1, color, dim } = props
+function Column(props: { x: number; width: number; y0: number; y1: number; color: string; dim: boolean; ring?: boolean }) {
+  const { x, width, y0, y1, color, dim, ring } = props
   const top = Math.min(y0, y1)
   const h = Math.max(1, Math.abs(y0 - y1))
   const r = Math.min(4, width / 2, h)
@@ -137,7 +149,16 @@ function Column(props: { x: number; width: number; y0: number; y1: number; color
   const d = up
     ? `M${x},${y0} V${top + r} Q${x},${top} ${x + r},${top} H${x + width - r} Q${x + width},${top} ${x + width},${top + r} V${y0} Z`
     : `M${x},${y0} V${top + h - r} Q${x},${top + h} ${x + r},${top + h} H${x + width - r} Q${x + width},${top + h} ${x + width},${top + h - r} V${y0} Z`
-  return <path d={d} fill={color} opacity={dim ? 0.35 : 1} />
+  return (
+    <path
+      d={d}
+      fill={color}
+      opacity={dim ? 0.35 : 1}
+      stroke={ring ? 'var(--color-panel)' : undefined}
+      strokeWidth={ring ? 2 : undefined}
+      paintOrder="stroke"
+    />
+  )
 }
 
 function Tooltip({ point, left, width }: { point: MoneyPoint; left: number; width: number }) {
