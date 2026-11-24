@@ -162,7 +162,11 @@ ${d.notes ? `<p class="obs"><b>Diagnóstico:</b> ${esc(d.notes)}</p>` : ''}
 <div class="cond">
   ${d.paymentMethod ? `<div><b>Pagamento:</b> ${esc(d.paymentMethod)}</div>` : ''}
   ${d.expectedDeliveryAt ? `<div><b>Previsão de entrega:</b> ${deliveryText(d.expectedDeliveryAt)}, após aprovação</div>` : ''}
-  ${d.warrantyDays > 0 ? `<div><b>Garantia:</b> ${d.warrantyDays} dias para peças e serviço, a partir da entrega</div>` : ''}
+  ${
+    d.warrantyDays > 0
+      ? `<div><b>Garantia:</b> ${d.warrantyDays} dias para peças e serviço, a partir da entrega</div>`
+      : '<div><b>Garantia:</b> não inclusa neste serviço</div>'
+  }
 </div>
 
 <div class="sign">

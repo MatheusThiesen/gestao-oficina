@@ -94,7 +94,8 @@ function prefix(p: string) {
   }
 }
 
-function toItemRows(items: QuoteItemInput[], defaultWarranty: number): QuoteItemRow[] {
+/** Cada item herda a garantia do orçamento (0 = sem garantia). */
+function toItemRows(items: QuoteItemInput[], quoteWarrantyDays: number): QuoteItemRow[] {
   return items.map((item, position) => {
     const priced = priceLine(toLine(item))
     const isPart = item.type === 'PECA'
@@ -108,7 +109,7 @@ function toItemRows(items: QuoteItemInput[], defaultWarranty: number): QuoteItem
       markupBp: isPart ? (item.markupBp ?? 0) : null,
       unitPriceCents: priced.unitPriceCents,
       totalCents: priced.totalCents,
-      warrantyDays: item.warrantyDays ?? defaultWarranty,
+      warrantyDays: quoteWarrantyDays,
       position
     }
   })
@@ -150,7 +151,13 @@ export function toView(q: QuoteFull): QuoteView {
     sentAt: q.sentAt?.toISOString() ?? null,
     validUntil: q.validUntil.toISOString(),
     customer: { id: q.customer.id, name: q.customer.name, whatsapp: q.customer.whatsapp },
-    vehicle: { id: q.vehicle.id, plate: q.vehicle.plate, label: vehicleLabel(q.vehicle), currentKm: q.vehicle.currentKm },
+    vehicle: {
+      id: q.vehicle.id,
+      plate: q.vehicle.plate,
+      label: vehicleLabel(q.vehicle),
+      currentKm: q.vehicle.currentKm,
+      brand: q.vehicle.brand
+    },
     entryKm: q.entryKm,
     validityDays: q.validityDays,
     paymentMethod: q.paymentMethod,

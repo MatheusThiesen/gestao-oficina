@@ -5,6 +5,7 @@
  */
 import type { BackupStatus, RestoreResult } from './backup'
 import type { DashboardData, DashboardQuery } from './dashboard'
+import type { CatalogBrand, CatalogModel } from './vehicle-catalog'
 import type { DocumentListQuery, DocumentListResult, KeyTagView } from './documents'
 import type {
   CatalogPart,
@@ -60,6 +61,9 @@ export interface IpcContract {
   'quotes:calculate': { input: { items: QuoteItemInput[]; discountBp: number }; output: QuoteCalculation }
   'quotes:pdf': { input: { id: number }; output: { path: string } }
   'quotes:openPdfFolder': { input: void; output: void }
+  'vehicleCatalog:brands': { input: { search?: string }; output: CatalogBrand[] }
+  'vehicleCatalog:models': { input: { brand: string; search?: string }; output: CatalogModel[] }
+  'vehicleCatalog:logo': { input: { brand: string }; output: string | null }
   'catalog:parts': { input: { search?: string }; output: CatalogPart[] }
   'catalog:services': { input: { search?: string }; output: CatalogService[] }
 }

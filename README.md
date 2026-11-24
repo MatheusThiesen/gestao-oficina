@@ -29,7 +29,7 @@ a usar essa identidade: o menu, o ícone e os atalhos do Windows e o PDF que vai
 | --- | --- |
 | **Painel** | Ver o dia (carros na oficina, prontos para entregar, orçamentos esperando resposta) e analisar a semana ou o mês: faturamento, lucro bruto, margem, ticket médio, taxa de aprovação e gráfico de faturamento × lucro. |
 | **Orçamentos e OS** | Buscar por placa, cliente, número ou número da chave; filtrar por status. |
-| **Orçamento** | Começar pela placa (carro conhecido traz o dono e o km; carro novo é cadastrado ali mesmo), lançar peças e mão de obra com sugestões do cadastro, aplicar desconto e ver o custo e o lucro internos. Gerar o PDF para o cliente. |
+| **Orçamento** | Começar pela placa (carro conhecido traz o dono e o km; carro novo é cadastrado ali mesmo, escolhendo marca e modelo da Tabela FIPE com a logo da marca), lançar peças e mão de obra com sugestões do cadastro, aplicar desconto, escolher a garantia (ou "sem garantia") e ver o custo e o lucro internos. Gerar o PDF para o cliente. |
 | **Clientes** | Cadastro com CPF/CNPJ e WhatsApp validados, carros de cada cliente e total gasto. |
 | **Veículos** | Ficha com placa Mercosul, histórico de serviços, garantias vigentes e próxima troca de óleo. Troca de dono sem perder o histórico. |
 | **Chaves** | Grade dos chaveiros numerados: quais estão livres e quais estão com qual carro. |
@@ -107,15 +107,18 @@ Ao concluir, o programa abre no **Painel**.
 
 1. Clique em **Novo orçamento** (ou `Ctrl+N`).
 2. Digite a **placa** e tecle `Enter`.
-   - Carro já atendido: o modelo, o dono e o último km aparecem sozinhos.
-   - Carro novo: preencha marca, modelo e ano ali mesmo.
+   - Carro já atendido: o modelo (com a logo da marca), o dono e o último km aparecem sozinhos.
+   - Carro novo: escolha a **marca** (lista com logos) e o **modelo** (modelos e versões da Tabela FIPE),
+     o ano e a cor. Se a marca ou o modelo não estiver na lista, use a opção **Usar "o que você digitou"**.
 3. Em **Cliente**, procure por nome, telefone ou CPF. Se não existir, clique em **Cadastrar "nome"** e
-   informe o WhatsApp.
+   informe o WhatsApp e, se quiser, o CPF ou CNPJ. Os campos se formatam enquanto você digita e o programa
+   avisa na hora se o documento é inválido.
 4. Em **Itens**, use **Peça** e **Mão de obra**. Comece a digitar a descrição para ver as sugestões do
    cadastro; escolher uma sugestão preenche custo e markup (peça) ou horas e preço (serviço).
 5. Ajuste quantidade, custo, markup ou valor da hora direto na tabela. O **Resumo** mostra o total e, no
    quadro tracejado, o custo e o lucro das peças, que são só para você.
-6. Preencha as **Condições** (validade, previsão de entrega, pagamento, garantia, observações).
+6. Preencha as **Condições** (validade, previsão de entrega, pagamento, garantia, observações). Para um
+   serviço sem garantia, marque **Sem garantia**: o PDF informa "Garantia: não inclusa neste serviço".
 7. **Salvar** (`Ctrl+S`) ou **Gerar PDF**, que salva e abre o PDF pronto para mandar ao cliente.
 
 ### Atalhos de teclado
@@ -245,6 +248,7 @@ entregues), para o painel e as telas terem conteúdo.
 | `npm run db:migrate -- --name descricao` | Nova migration a partir do `prisma/schema.prisma` |
 | `npm run dist:win` | Instalador do Windows local, sem publicar (rodar no Windows) |
 | `npm run build && npm run docs:gifs` | Regrava os GIFs deste README (precisa do `ffmpeg`) |
+| `npm run catalog:import` | Atualiza marcas, modelos (Tabela FIPE) e logos em `resources/vehicle-catalog` (precisa de internet e do `ffmpeg`) |
 
 ### Estrutura
 
@@ -276,6 +280,10 @@ docs/            GIFs e logo fictícia das demonstrações
 - **Senha:** guardada como hash scrypt. Com o programa bloqueado, o processo principal recusa qualquer
   pedido de dados, não só a tela.
 - **Cores dos gráficos** são fixas e validadas para daltonismo; não seguem a cor da marca.
+- **Catálogo de veículos:** marcas e modelos vêm da Tabela FIPE (API pública da Parallelum) e as logos do
+  projeto [car-logos-dataset](https://github.com/filippofilip95/car-logos-dataset). Tudo fica embutido no
+  programa, sem depender de internet. As logos são marcas registradas das respectivas montadoras e servem
+  só para identificar a marca do veículo.
 
 ### Publicar uma versão
 

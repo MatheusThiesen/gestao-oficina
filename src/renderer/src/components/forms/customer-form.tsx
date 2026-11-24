@@ -1,4 +1,4 @@
-import { formatDocument, formatPhone } from '@shared/format'
+import { maskDocumentInput, maskPhoneInput } from '@shared/format'
 import type { CustomerInput, CustomerType } from '@shared/registry'
 import { Field, FieldGrid } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
@@ -33,8 +33,7 @@ export function CustomerForm({ value, onChange, errors, compact }: CustomerFormP
           id="c-doc"
           value={value.document ?? ''}
           placeholder={isPj ? '00.000.000/0000-00' : '000.000.000-00'}
-          onChange={(e) => set('document', e.target.value)}
-          onBlur={(e) => set('document', formatDocument(e.target.value))}
+          onChange={(e) => set('document', maskDocumentInput(e.target.value))}
         />
       </Field>
       <Field label="WhatsApp" htmlFor="c-zap" error={errors.whatsapp}>
@@ -42,8 +41,7 @@ export function CustomerForm({ value, onChange, errors, compact }: CustomerFormP
           id="c-zap"
           value={value.whatsapp ?? ''}
           placeholder="(00) 00000-0000"
-          onChange={(e) => set('whatsapp', e.target.value)}
-          onBlur={(e) => set('whatsapp', formatPhone(e.target.value))}
+          onChange={(e) => set('whatsapp', maskPhoneInput(e.target.value))}
         />
       </Field>
       {!compact && (

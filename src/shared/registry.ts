@@ -52,6 +52,7 @@ export interface VehicleInput {
 export interface VehicleListItem {
   id: number
   plate: string
+  brand: string | null
   label: string
   ownerName: string | null
   currentKm: number | null
@@ -67,6 +68,8 @@ export interface VehicleHistoryRow {
   status: DocumentStatus
   /** Data final da garantia (OS entregue). */
   warrantyUntil: string | null
+  /** Serviço feito sem garantia. */
+  withoutWarranty: boolean
   totalCents: number
 }
 

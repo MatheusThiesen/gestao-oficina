@@ -21,7 +21,8 @@
     "db:generate": "prisma generate",
     "dist:win": "npm run build && electron-builder --win --publish never",
     "dist:mac": "npm run build && electron-builder --mac --publish never",
-    "docs:gifs": "node scripts/record-demos.mjs"
+    "docs:gifs": "node scripts/record-demos.mjs",
+    "catalog:import": "node scripts/import-vehicle-catalog.mjs"
   },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.10.1",

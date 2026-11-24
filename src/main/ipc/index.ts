@@ -14,6 +14,8 @@ import { appPaths } from '../infra/paths'
 import { registerBackupHandlers } from './backup-handlers'
 import { handle, setLockCheck } from './register'
 import {
+  brandInput,
+  modelSearchInput,
   unlockInput,
   calculateInput,
   setupInput,
@@ -108,6 +110,12 @@ export function registerIpcHandlers(c: Container, onBrandingChanged: (appName: s
     mkdirSync(folder, { recursive: true })
     await shell.openPath(folder)
   })
+  handle('vehicleCatalog:brands', (input) => c.vehicleCatalog.searchBrands(searchInput.parse(input ?? {}).search ?? ''))
+  handle('vehicleCatalog:models', (input) => {
+    const { brand, search } = modelSearchInput.parse(input)
+    return c.vehicleCatalog.searchModels(brand, search ?? '')
+  })
+  handle('vehicleCatalog:logo', (input) => c.vehicleCatalog.logoFor(brandInput.parse(input).brand))
   handle('catalog:parts', (input) => c.quotes.searchParts(searchInput.parse(input ?? {}).search ?? ''))
   handle('catalog:services', (input) => c.quotes.searchServices(searchInput.parse(input ?? {}).search ?? ''))
 }

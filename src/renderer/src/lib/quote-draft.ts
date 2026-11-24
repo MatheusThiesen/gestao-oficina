@@ -33,6 +33,7 @@ export interface VehicleRef {
   plate: string
   label: string
   currentKm: number | null
+  brand: string | null
 }
 
 export interface QuoteDraft {

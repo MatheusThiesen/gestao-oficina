@@ -1,10 +1,15 @@
+import { Car, UserPlus, X } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { formatKm, formatPhone, parseInteger } from '@shared/format'
+import { formatKm, formatPhone, maskDocumentInput, maskPhoneInput, parseInteger } from '@shared/format'
 import type { CustomerInput, VehicleInput } from '@shared/registry'
+import { isValidCnpj, isValidCpf, isValidPhone } from '@shared/validation'
 import { CustomerPicker } from '@/components/customer-picker'
 import { Field, FieldGrid } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Panel, PanelBody, PanelHeader } from '@/components/ui/panel'
+import { BrandLogo } from '@/components/vehicle/brand-logo'
+import { BrandPicker, ColorPicker, ModelPicker } from '@/components/vehicle/vehicle-pickers'
 import { call } from '@/lib/ipc'
 import { emptyCustomer, emptyVehicle } from '@/lib/defaults'
 import type { QuoteDraft } from '@/lib/quote-draft'
@@ -20,7 +25,7 @@ interface Props {
 
 const PLATE_LIKE = /^[A-Z]{3}\d[A-Z0-9]\d{2}$/
 
-/** Começa pela placa: carro conhecido traz o dono; carro novo é cadastrado aqui mesmo. */
+/** Começa pela placa: carro conhecido traz o dono; carro e cliente novos são cadastrados aqui mesmo. */
 export function CustomerVehiclePanel({ draft, update, errors, readOnly, locked }: Props) {
   async function lookupPlate(raw: string) {
     const plate = raw.replace(/[^a-z0-9]/gi, '').toUpperCase()
@@ -32,11 +37,12 @@ export function CustomerVehiclePanel({ draft, update, errors, readOnly, locked }
     const found = await call('vehicles:get', { plate })
     if (!found) {
       update({ plate, vehicle: null, newVehicle: emptyVehicle(plate) })
+      requestAnimationFrame(() => document.getElementById('q-brand')?.focus())
       return
     }
     update({
       plate,
-      vehicle: { id: found.id, plate: found.plate, label: found.label, currentKm: found.currentKm ?? null },
+      vehicle: { id: found.id, plate: found.plate, label: found.label, currentKm: found.currentKm ?? null, brand: found.brand ?? null },
       newVehicle: null,
       // Carro conhecido: sugere o dono atual, sem sobrescrever um cliente já escolhido.
       ...(!draft.customer && !draft.newCustomer && found.owner ? { customer: found.owner } : {}),
@@ -59,7 +65,7 @@ export function CustomerVehiclePanel({ draft, update, errors, readOnly, locked }
           </Link>
         )}
       </PanelHeader>
-      <PanelBody>
+      <PanelBody className="flex flex-col gap-4">
         <FieldGrid>
           <Field label="Placa" htmlFor="q-plate" error={errors.plate ?? errors['vehicle.plate']}>
             <Input
@@ -76,27 +82,21 @@ export function CustomerVehiclePanel({ draft, update, errors, readOnly, locked }
             />
           </Field>
 
-          {draft.newVehicle ? (
-            <>
-              <Field label="Marca" htmlFor="q-brand">
-                <Input id="q-brand" value={draft.newVehicle.brand ?? ''} onChange={(e) => setNewVehicle({ brand: e.target.value })} />
-              </Field>
-              <Field label="Modelo" htmlFor="q-model">
-                <Input id="q-model" value={draft.newVehicle.model ?? ''} onChange={(e) => setNewVehicle({ model: e.target.value })} />
-              </Field>
-              <Field label="Ano" htmlFor="q-year" error={errors['vehicle.year']}>
-                <Input
-                  id="q-year"
-                  inputMode="numeric"
-                  maxLength={4}
-                  value={draft.newVehicle.year ?? ''}
-                  onChange={(e) => setNewVehicle({ year: parseInteger(e.target.value) })}
-                />
-              </Field>
-            </>
-          ) : (
-            <Field label="Veículo" htmlFor="q-veh">
-              <Input id="q-veh" disabled value={draft.vehicle?.label ?? ''} placeholder="Digite a placa" />
+          {!draft.newVehicle && (
+            <Field label="Veículo" htmlFor="q-veh" className="col-span-2">
+              <div
+                id="q-veh"
+                className="flex h-8 items-center gap-2 rounded-md border border-line-strong bg-hover px-2 text-ink"
+              >
+                {draft.vehicle ? (
+                  <>
+                    <BrandLogo brand={draft.vehicle.brand} size={22} />
+                    <span className="truncate">{draft.vehicle.label || 'Sem modelo cadastrado'}</span>
+                  </>
+                ) : (
+                  <span className="text-muted">Digite a placa e tecle Enter</span>
+                )}
+              </div>
             </Field>
           )}
 
@@ -113,67 +113,159 @@ export function CustomerVehiclePanel({ draft, update, errors, readOnly, locked }
             />
           </Field>
 
-          <Field label="Cliente" htmlFor="q-cli" error={errors.customer ?? errors['customer.name']}>
-            {locked ? (
-              <Input id="q-cli" disabled value={draft.customer?.name ?? ''} />
-            ) : draft.newCustomer ? (
-              <Input id="q-cli" value={draft.newCustomer.name} onChange={(e) => setNewCustomer({ name: e.target.value })} />
-            ) : (
-              <CustomerPicker
-                id="q-cli"
-                value={draft.customer}
-                onChange={(customer) => update({ customer })}
-                onCreate={(name) => update({ customer: null, newCustomer: emptyCustomer(name) })}
-              />
-            )}
-          </Field>
-
-          <Field label="WhatsApp" htmlFor="q-zap" error={errors['customer.whatsapp']}>
-            {draft.newCustomer ? (
-              <Input
-                id="q-zap"
-                placeholder="(00) 00000-0000"
-                value={draft.newCustomer.whatsapp ?? ''}
-                onChange={(e) => setNewCustomer({ whatsapp: e.target.value })}
-                onBlur={(e) => setNewCustomer({ whatsapp: formatPhone(e.target.value) })}
-              />
-            ) : (
-              <Input id="q-zap" disabled value={formatPhone(draft.customer?.whatsapp)} />
-            )}
-          </Field>
-
-          {draft.newCustomer && (
-            <Field label="CPF/CNPJ (opcional)" htmlFor="q-doc" error={errors['customer.document']}>
-              <Input
-                id="q-doc"
-                value={draft.newCustomer.document ?? ''}
-                onChange={(e) => {
-                  const digits = e.target.value.replace(/\D/g, '')
-                  setNewCustomer({ document: e.target.value, type: digits.length > 11 ? 'PJ' : 'PF' })
-                }}
-              />
-            </Field>
+          {!draft.newCustomer && (
+            <>
+              <Field label="Cliente" htmlFor="q-cli" error={errors.customer}>
+                {locked ? (
+                  <Input id="q-cli" disabled value={draft.customer?.name ?? ''} />
+                ) : (
+                  <CustomerPicker
+                    id="q-cli"
+                    value={draft.customer}
+                    onChange={(customer) => update({ customer })}
+                    onCreate={(name) => {
+                      update({ customer: null, newCustomer: emptyCustomer(name) })
+                      requestAnimationFrame(() => document.getElementById('q-zap')?.focus())
+                    }}
+                  />
+                )}
+              </Field>
+              <Field label="WhatsApp" htmlFor="q-zap-ro">
+                <Input id="q-zap-ro" disabled value={formatPhone(draft.customer?.whatsapp)} />
+              </Field>
+            </>
           )}
         </FieldGrid>
 
-        {(draft.newVehicle || draft.newCustomer) && !readOnly && (
-          <p className="mt-3 mb-0 text-[12.5px] text-muted">
-            {[draft.newVehicle && `Placa ${draft.plate} nova`, draft.newCustomer && 'cliente novo']
-              .filter(Boolean)
-              .join(' e ')}
-            : o cadastro é feito ao salvar o orçamento.
-            {draft.newCustomer && (
-              <button
-                type="button"
-                className="ml-2 border-0 bg-transparent p-0 text-brand-text hover:underline"
-                onClick={() => update({ newCustomer: null })}
-              >
-                Escolher cliente existente
-              </button>
-            )}
-          </p>
+        {draft.newVehicle && !readOnly && (
+          <NewBlock
+            icon={Car}
+            title={`Carro novo, placa ${draft.plate}`}
+            onCancel={() => update({ newVehicle: null, plate: '' })}
+            cancelLabel="Trocar placa"
+          >
+            <FieldGrid>
+              <Field label="Marca" htmlFor="q-brand">
+                <BrandPicker id="q-brand" value={draft.newVehicle.brand ?? ''} onChange={(brand) => setNewVehicle({ brand })} />
+              </Field>
+              <Field label="Modelo" htmlFor="q-model">
+                <ModelPicker
+                  id="q-model"
+                  brand={draft.newVehicle.brand ?? ''}
+                  value={draft.newVehicle.model ?? ''}
+                  onChange={(model) => setNewVehicle({ model })}
+                />
+              </Field>
+              <Field label="Ano" htmlFor="q-year" error={errors['vehicle.year']}>
+                <Input
+                  id="q-year"
+                  inputMode="numeric"
+                  maxLength={4}
+                  placeholder="2020"
+                  value={draft.newVehicle.year ?? ''}
+                  onChange={(e) => setNewVehicle({ year: parseInteger(e.target.value) })}
+                />
+              </Field>
+              <Field label="Cor" htmlFor="q-color">
+                <ColorPicker id="q-color" value={draft.newVehicle.color ?? ''} onChange={(color) => setNewVehicle({ color })} />
+              </Field>
+            </FieldGrid>
+          </NewBlock>
+        )}
+
+        {draft.newCustomer && !readOnly && (
+          <NewBlock
+            icon={UserPlus}
+            title="Cliente novo"
+            onCancel={() => update({ newCustomer: null })}
+            cancelLabel="Escolher cliente existente"
+          >
+            <NewCustomerFields customer={draft.newCustomer} set={setNewCustomer} errors={errors} />
+          </NewBlock>
         )}
       </PanelBody>
     </Panel>
+  )
+}
+
+function NewBlock(props: { icon: typeof Car; title: string; children: ReactNode; onCancel: () => void; cancelLabel: string }) {
+  const { icon: Icon, title, children, onCancel, cancelLabel } = props
+  return (
+    <section className="rounded-lg border border-dashed border-line-strong bg-bg/50 p-3.5">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <span className="flex items-center gap-2">
+          <Icon size={16} className="text-muted" aria-hidden="true" />
+          <span>
+            <span className="font-semibold">{title}</span>
+            <span className="text-[12.5px] text-muted"> (cadastrado ao salvar o orçamento)</span>
+          </span>
+        </span>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="flex items-center gap-1 border-0 bg-transparent p-0 text-[12.5px] text-brand-text hover:underline"
+        >
+          <X size={13} aria-hidden="true" />
+          {cancelLabel}
+        </button>
+      </div>
+      {children}
+    </section>
+  )
+}
+
+/** Nome, WhatsApp e CPF/CNPJ com máscara e conferência na hora (o tipo PF/PJ sai do documento). */
+function NewCustomerFields(props: {
+  customer: CustomerInput
+  set: (patch: Partial<CustomerInput>) => void
+  errors: Record<string, string>
+}) {
+  const { customer, set, errors } = props
+  const docDigits = (customer.document ?? '').replace(/\D/g, '')
+  const phoneDigits = (customer.whatsapp ?? '').replace(/\D/g, '')
+  const isPj = docDigits.length > 11
+  const docHint =
+    docDigits.length === 11
+      ? isValidCpf(docDigits)
+        ? 'CPF válido'
+        : 'CPF inválido'
+      : docDigits.length === 14
+        ? isValidCnpj(docDigits)
+          ? 'CNPJ válido'
+          : 'CNPJ inválido'
+        : null
+  const phoneHint = phoneDigits.length >= 10 && !isValidPhone(phoneDigits) ? 'Telefone inválido' : null
+
+  return (
+    <FieldGrid>
+      <Field label={isPj ? 'Razão social' : 'Nome'} htmlFor="q-cli-name" error={errors['customer.name']} className="col-span-2">
+        <Input id="q-cli-name" value={customer.name} onChange={(e) => set({ name: e.target.value })} />
+      </Field>
+      <Field label="WhatsApp" htmlFor="q-zap" error={errors['customer.whatsapp'] ?? phoneHint ?? undefined}>
+        <Input
+          id="q-zap"
+          inputMode="tel"
+          placeholder="(00) 00000-0000"
+          value={customer.whatsapp ?? ''}
+          onChange={(e) => set({ whatsapp: maskPhoneInput(e.target.value) })}
+        />
+      </Field>
+      <Field label="CPF ou CNPJ (opcional)" htmlFor="q-doc" error={errors['customer.document']}>
+        <Input
+          id="q-doc"
+          inputMode="numeric"
+          value={customer.document ?? ''}
+          onChange={(e) => {
+            const document = maskDocumentInput(e.target.value)
+            set({ document, type: document.replace(/\D/g, '').length > 11 ? 'PJ' : 'PF' })
+          }}
+        />
+        {docHint && !errors['customer.document'] && (
+          <span className={docHint.endsWith('inválido') ? 'text-[12px] text-brand-text' : 'text-[12px] text-[#17693a]'}>
+            {docHint}
+          </span>
+        )}
+      </Field>
+    </FieldGrid>
   )
 }

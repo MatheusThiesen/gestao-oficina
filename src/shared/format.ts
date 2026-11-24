@@ -86,3 +86,22 @@ export function formatMoneyCompact(cents: number): string {
 export function formatPercent(ratio: number): string {
   return `${compact.format(ratio * 100)}%`
 }
+
+/** Máscara progressiva de telefone: "51998" → "(51) 998"; 11 dígitos → "(51) 99876-5432". */
+export function maskPhoneInput(raw: string): string {
+  const d = raw.replace(/\D/g, '').slice(0, 11)
+  if (d.length === 0) return ''
+  if (d.length <= 2) return `(${d}`
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`
+  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`
+}
+
+/** Máscara progressiva: até 11 dígitos é CPF (000.000.000-00); acima, CNPJ (00.000.000/0000-00). */
+export function maskDocumentInput(raw: string): string {
+  const d = raw.replace(/\D/g, '').slice(0, 14)
+  if (d.length <= 11) {
+    return [d.slice(0, 3), d.slice(3, 6), d.slice(6, 9)].filter(Boolean).join('.') + (d.length > 9 ? `-${d.slice(9)}` : '')
+  }
+  return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}${d.length > 12 ? `-${d.slice(12)}` : ''}`
+}

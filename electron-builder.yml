@@ -19,6 +19,9 @@ extraResources:
   - from: prisma/migrations
     to: migrations
     filter: ['**/*.sql']
+  # Marcas/modelos FIPE e logos (npm run catalog:import).
+  - from: resources/vehicle-catalog
+    to: vehicle-catalog
 asarUnpack:
   - '**/*.node'
 

@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { formatPhone } from '@shared/format'
 import type { CustomerListItem } from '@shared/registry'
 import { Input } from '@/components/ui/input'
+import { useAnchorRect } from '@/hooks/use-anchor-rect'
 import { useDebounced, useIpcQuery } from '@/hooks/use-ipc-query'
 import { call } from '@/lib/ipc'
 import { cn } from '@/lib/utils'
@@ -65,6 +66,7 @@ export function CustomerPicker({ id, value, onChange, onCreate, placeholder }: C
   }
 
   const showCreate = onCreate && search.trim().length >= 2 && options.length === 0
+  const anchor = useAnchorRect(wrapper, open && (options.length > 0 || !!showCreate))
 
   return (
     <div ref={wrapper} className="relative">
@@ -89,7 +91,8 @@ export function CustomerPicker({ id, value, onChange, onCreate, placeholder }: C
         <ul
           id={listId}
           role="listbox"
-          className="absolute z-20 mt-1 max-h-72 w-full min-w-[280px] overflow-auto rounded-md border border-line-strong bg-white py-1 shadow-lg"
+          style={anchor ? { left: anchor.left, top: anchor.top, width: anchor.width } : undefined}
+          className="fixed z-50 max-h-72 min-w-[280px] overflow-auto rounded-md border border-line-strong bg-white py-1 shadow-lg"
         >
           {options.map((c, i) => (
             <li

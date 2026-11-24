@@ -9,6 +9,7 @@ import { VehicleForm } from '@/components/forms/vehicle-form'
 import { PageHeader } from '@/components/layout/page-header'
 import { Plate } from '@/components/plate'
 import { StatusTag } from '@/components/status-tag'
+import { BrandLogo } from '@/components/vehicle/brand-logo'
 import { Button } from '@/components/ui/button'
 import { Panel, PanelBody, PanelHeader } from '@/components/ui/panel'
 import { Table, TBody, Td, Th, THead, Tr } from '@/components/ui/table'
@@ -53,6 +54,7 @@ function VehicleView({ vehicle, onSaved }: { vehicle: VehicleDetail; onSaved: ()
         title={
           <span className="flex items-center gap-3 font-sans text-[22px] not-italic font-semibold">
             <Plate plate={vehicle.plate} size="lg" />
+            <BrandLogo brand={vehicle.brand} size={40} />
             {vehicle.label}
           </span>
         }
@@ -133,6 +135,8 @@ function VehicleView({ vehicle, onSaved }: { vehicle: VehicleDetail; onSaved: ()
                   <Td>
                     {h.status !== 'ENTREGUE' ? (
                       <StatusTag status={h.status} />
+                    ) : h.withoutWarranty ? (
+                      <span className="tag t-entregue">Sem garantia</span>
                     ) : h.warrantyUntil && new Date(h.warrantyUntil) >= new Date() ? (
                       <span className="tag t-aprovado">Até {formatDate(h.warrantyUntil)}</span>
                     ) : (

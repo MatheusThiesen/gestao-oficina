@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { bpToInput, centsToInput, milliToInput, parseScaled } from './format'
+import { bpToInput, centsToInput, maskDocumentInput, maskPhoneInput, milliToInput, parseScaled } from './format'
 
 describe('parseScaled', () => {
   it('lê dinheiro com vírgula decimal e milhar com ponto', () => {
@@ -22,5 +22,21 @@ describe('parseScaled', () => {
     expect(centsToInput(12_000)).toBe('120,00')
     expect(milliToInput(1_500)).toBe('1,5')
     expect(bpToInput(3_750)).toBe('37,5')
+  })
+})
+
+describe('máscaras enquanto digita', () => {
+  it('telefone', () => {
+    expect(maskPhoneInput('5')).toBe('(5')
+    expect(maskPhoneInput('51998')).toBe('(51) 998')
+    expect(maskPhoneInput('5133449080')).toBe('(51) 3344-9080')
+    expect(maskPhoneInput('51998765432')).toBe('(51) 99876-5432')
+    expect(maskPhoneInput('(51) 99876-54321')).toBe('(51) 99876-5432')
+  })
+  it('CPF e CNPJ', () => {
+    expect(maskDocumentInput('4314')).toBe('431.4')
+    expect(maskDocumentInput('43148291093')).toBe('431.482.910-93')
+    expect(maskDocumentInput('121001200001')).toBe('12.100.120/0001')
+    expect(maskDocumentInput('12100120000140')).toBe('12.100.120/0001-40')
   })
 })

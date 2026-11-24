@@ -8,6 +8,9 @@ export const appPaths = {
   /** No app empacotado as migrations vão em resources/migrations (extraResources do electron-builder). */
   migrations: () =>
     app.isPackaged ? join(process.resourcesPath, 'migrations') : join(app.getAppPath(), 'prisma', 'migrations'),
+  /** Catálogo FIPE + logos das marcas (extraResources no instalador). */
+  vehicleCatalog: () =>
+    app.isPackaged ? join(process.resourcesPath, 'vehicle-catalog') : join(app.getAppPath(), 'resources', 'vehicle-catalog'),
   /** Documentos/<nome do programa> (PDFs e backups). */
   documents: (appName: string) => join(app.getPath('documents'), safeFolderName(appName))
 }

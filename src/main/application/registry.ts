@@ -118,6 +118,7 @@ function toHistoryRow(q: HistoryQuote): VehicleHistoryRow {
       wo?.status === 'ENTREGUE' && wo.deliveredAt && maxWarranty > 0
         ? warrantyUntil(wo.deliveredAt, maxWarranty).toISOString()
         : null,
+    withoutWarranty: q.warrantyDays === 0,
     totalCents: q.totalCents
   }
 }

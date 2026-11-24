@@ -3,6 +3,7 @@ import { FUELS, type VehicleInput } from '@shared/registry'
 import { Field, FieldGrid } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
+import { BrandPicker, ColorPicker, ModelPicker } from '@/components/vehicle/vehicle-pickers'
 
 interface VehicleFormProps {
   value: VehicleInput
@@ -30,10 +31,10 @@ export function VehicleForm({ value, onChange, errors, hidePlate }: VehicleFormP
         </Field>
       )}
       <Field label="Marca" htmlFor="v-brand">
-        <Input id="v-brand" value={value.brand ?? ''} onChange={(e) => set('brand', e.target.value)} />
+        <BrandPicker id="v-brand" value={value.brand ?? ''} onChange={(brand) => set('brand', brand)} />
       </Field>
       <Field label="Modelo" htmlFor="v-model">
-        <Input id="v-model" placeholder="Onix 1.0" value={value.model ?? ''} onChange={(e) => set('model', e.target.value)} />
+        <ModelPicker id="v-model" brand={value.brand ?? ''} value={value.model ?? ''} onChange={(model) => set('model', model)} />
       </Field>
       <Field label="Ano" htmlFor="v-year" error={errors.year}>
         <Input
@@ -45,7 +46,7 @@ export function VehicleForm({ value, onChange, errors, hidePlate }: VehicleFormP
         />
       </Field>
       <Field label="Cor" htmlFor="v-color">
-        <Input id="v-color" value={value.color ?? ''} onChange={(e) => set('color', e.target.value)} />
+        <ColorPicker id="v-color" value={value.color ?? ''} onChange={(color) => set('color', color)} />
       </Field>
       <Field label="Combustível" htmlFor="v-fuel">
         <Select id="v-fuel" value={value.fuel ?? ''} onChange={(e) => set('fuel', e.target.value)}>

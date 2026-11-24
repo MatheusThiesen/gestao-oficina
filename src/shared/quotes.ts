@@ -77,7 +77,7 @@ export interface QuoteView {
   sentAt: string | null
   validUntil: string
   customer: { id: number; name: string; whatsapp: string | null }
-  vehicle: { id: number; plate: string; label: string; currentKm: number | null }
+  vehicle: { id: number; plate: string; label: string; currentKm: number | null; brand: string | null }
   entryKm: number | null
   validityDays: number
   paymentMethod: string | null

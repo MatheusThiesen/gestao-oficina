@@ -47,6 +47,7 @@ export class VehicleRepository {
     return vehicles.map((v) => ({
       id: v.id,
       plate: v.plate,
+      brand: v.brand,
       label: vehicleLabel(v),
       ownerName: v.ownerships[0]?.customer.name ?? null,
       currentKm: v.currentKm,

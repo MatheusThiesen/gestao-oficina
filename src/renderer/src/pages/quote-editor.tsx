@@ -164,7 +164,7 @@ function QuoteEditor({ settings, quote, initialPlate, onReload }: EditorProps) {
         errors={submit.fields}
         readOnly={readOnly}
       />
-      <ConditionsAndSummary draft={draft} update={update} totals={calc?.totals} errors={submit.fields} readOnly={readOnly} />
+      <ConditionsAndSummary defaultWarrantyDays={settings.warrantyDays} draft={draft} update={update} totals={calc?.totals} errors={submit.fields} readOnly={readOnly} />
     </>
   )
 }

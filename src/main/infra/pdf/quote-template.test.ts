@@ -46,4 +46,10 @@ describe('PDF do orçamento', () => {
     expect(html).toContain('border-bottom: 3px solid #c8121a')
     expect(html).not.toContain('Desconto')
   })
+
+  it('deixa claro quando o serviço não tem garantia', () => {
+    const sem = renderQuoteHtml({ ...data, warrantyDays: 0 }, fonts)
+    expect(sem).toContain('não inclusa neste serviço')
+    expect(sem).not.toContain('dias para peças e serviço')
+  })
 })

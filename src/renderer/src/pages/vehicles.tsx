@@ -5,6 +5,7 @@ import { formatDate, formatKm } from '@shared/format'
 import { EmptyState } from '@/components/empty-state'
 import { PageHeader } from '@/components/layout/page-header'
 import { Plate } from '@/components/plate'
+import { BrandLogo } from '@/components/vehicle/brand-logo'
 import { SearchInput } from '@/components/search-input'
 import { Button } from '@/components/ui/button'
 import { Panel } from '@/components/ui/panel'
@@ -53,7 +54,12 @@ export function VehiclesPage() {
                 <Td>
                   <Plate plate={v.plate} />
                 </Td>
-                <Td>{v.label}</Td>
+                <Td>
+                  <span className="flex items-center gap-2">
+                    <BrandLogo brand={v.brand} size={24} />
+                    {v.label}
+                  </span>
+                </Td>
                 <Td>{v.ownerName ?? <span className="text-muted">Sem dono</span>}</Td>
                 <Td className="num">{v.currentKm != null ? formatKm(v.currentKm) : '—'}</Td>
                 <Td className="tabular-nums">{v.lastServiceAt ? formatDate(v.lastServiceAt) : '—'}</Td>

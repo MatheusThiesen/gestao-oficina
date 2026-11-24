@@ -5,6 +5,7 @@ import { initDatabase, type Db } from './infra/database'
 import { AppIconStore } from './infra/app-icon'
 import { LogoStore } from './infra/logo-store'
 import { UpdateService } from './infra/updater'
+import { VehicleCatalog } from './infra/vehicle-catalog'
 import { appPaths } from './infra/paths'
 import { CustomerRepository } from './infra/repositories/customer-repository'
 import { DashboardRepository } from './infra/repositories/dashboard-repository'
@@ -32,6 +33,7 @@ export interface Container {
   lock: SessionLock
   updates: UpdateService
   backups: BackupService
+  vehicleCatalog: VehicleCatalog
 }
 
 export async function createContainer(): Promise<Container> {
@@ -49,7 +51,8 @@ export async function createContainer(): Promise<Container> {
     icons: new AppIconStore(appPaths.branding()),
     lock: new SessionLock(new SecurityRepository(db)),
     updates: new UpdateService(),
-    backups: new BackupService(new SettingsRepository(db), app.getVersion())
+    backups: new BackupService(new SettingsRepository(db), app.getVersion()),
+    vehicleCatalog: new VehicleCatalog(appPaths.vehicleCatalog())
   }
 
   if (!app.isPackaged && (await seedIfEmpty(db))) console.info('[db] seed de desenvolvimento aplicado')

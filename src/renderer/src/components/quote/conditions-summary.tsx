@@ -8,6 +8,8 @@ import { Textarea } from '@/components/ui/textarea'
 import type { QuoteDraft } from '@/lib/quote-draft'
 
 interface Props {
+  /** Garantia padrão das Configurações, usada ao desmarcar "Sem garantia". */
+  defaultWarrantyDays: number
   draft: QuoteDraft
   update: (patch: Partial<QuoteDraft>) => void
   totals: QuoteTotalsView | undefined
@@ -15,7 +17,8 @@ interface Props {
   readOnly: boolean
 }
 
-export function ConditionsAndSummary({ draft, update, totals, errors, readOnly }: Props) {
+export function ConditionsAndSummary({ defaultWarrantyDays, draft, update, totals, errors, readOnly }: Props) {
+  const noWarranty = draft.warrantyDays.trim() === '0'
   const margin =
     totals && totals.partsCents > 0
       ? `${((totals.partsProfitCents / totals.partsCents) * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`
@@ -47,7 +50,24 @@ export function ConditionsAndSummary({ draft, update, totals, errors, readOnly }
               </Select>
             </Field>
             <Field label="Garantia (dias)" htmlFor="q-gar" error={errors.warrantyDays}>
-              <Input id="q-gar" inputMode="numeric" disabled={readOnly} value={draft.warrantyDays} onChange={(e) => update({ warrantyDays: e.target.value })} />
+              <Input
+                id="q-gar"
+                inputMode="numeric"
+                disabled={readOnly || noWarranty}
+                value={noWarranty ? '' : draft.warrantyDays}
+                placeholder={noWarranty ? 'Sem garantia' : undefined}
+                onChange={(e) => update({ warrantyDays: e.target.value })}
+              />
+              <label className="flex cursor-pointer items-center gap-1.5 text-[12.5px] text-muted">
+                <input
+                  type="checkbox"
+                  className="accent-[var(--color-brand)]"
+                  disabled={readOnly}
+                  checked={noWarranty}
+                  onChange={(e) => update({ warrantyDays: e.target.checked ? '0' : String(defaultWarrantyDays) })}
+                />
+                Sem garantia
+              </label>
             </Field>
             <Field label="Observações para o cliente" htmlFor="q-obs" className="col-span-full">
               <Textarea id="q-obs" rows={3} disabled={readOnly} value={draft.notes} onChange={(e) => update({ notes: e.target.value })} />

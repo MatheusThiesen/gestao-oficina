@@ -88,3 +88,6 @@ export const setupInput = z.object({
 })
 
 export const unlockInput = z.object({ password: z.string().max(200) })
+
+export const brandInput = z.object({ brand: z.string().max(60) })
+export const modelSearchInput = z.object({ brand: z.string().max(60), search: text(100) })
