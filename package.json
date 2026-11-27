@@ -1,7 +1,7 @@
 {
   "name": "gestao-oficina",
   "productName": "Gestão Oficina",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Sistema de gestão para oficinas mecânicas: orçamentos, ordens de serviço, clientes e veículos",
   "private": true,
   "main": "./out/main/index.js",
