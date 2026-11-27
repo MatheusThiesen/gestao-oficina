@@ -77,7 +77,7 @@ export interface IpcContract {
   'workflow:openWorkOrder': { input: { id: number; keyTagNumber: number | null }; output: { workOrderNumber: number } }
   'workflow:markReady': { input: { id: number }; output: void }
   'workflow:backToExecution': { input: { id: number }; output: void }
-  'workflow:deliver': { input: { id: number; exitKm: number | null }; output: void }
+  'workflow:deliver': { input: { id: number; exitKm: number | null; paymentMethod: string | null }; output: void }
   'workflow:cancel': { input: { id: number; reason: string }; output: void }
   'catalog:parts': { input: { search?: string }; output: CatalogPart[] }
   'catalog:services': { input: { search?: string }; output: CatalogService[] }

@@ -88,6 +88,11 @@ export class WorkflowRepository {
     })
   }
 
+  /** Como o cliente pagou (confirmado na entrega). */
+  setPaymentMethod(quoteId: number, paymentMethod: string): Promise<unknown> {
+    return this.db.quote.update({ where: { id: quoteId }, data: { paymentMethod } })
+  }
+
   setWorkOrderStatus(
     workOrderId: number,
     data: { status: WorkOrderStatus; readyAt?: Date | null; deliveredAt?: Date; canceledAt?: Date; cancelReason?: string; exitKm?: number | null }

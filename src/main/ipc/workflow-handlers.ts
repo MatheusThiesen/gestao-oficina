@@ -72,8 +72,10 @@ export function registerWorkflowHandlers(c: Container): void {
   handle('workflow:markReady', (input) => markReady(c, idOnly.parse(input).id))
   handle('workflow:backToExecution', (input) => backToExecution(c, idOnly.parse(input).id))
   handle('workflow:deliver', (input) => {
-    const p = z.object({ id, exitKm: z.number().int().min(0).max(3_000_000).nullable() }).parse(input)
-    return deliver(c, p.id, p.exitKm)
+    const p = z
+      .object({ id, exitKm: z.number().int().min(0).max(3_000_000).nullable(), paymentMethod: z.string().trim().max(60).nullable() })
+      .parse(input)
+    return deliver(c, p.id, p.exitKm, p.paymentMethod)
   })
   handle('workflow:cancel', (input) => {
     const p = z.object({ id, reason: z.string().max(500) }).parse(input)

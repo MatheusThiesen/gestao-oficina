@@ -136,6 +136,7 @@ function QuoteEditor({ settings, quote, initialPlate, onReload }: EditorProps) {
               quote={quote}
               persist={persist}
               readOnly={readOnly}
+              paymentMethod={draft.paymentMethod}
               onDone={(message, id) => {
                 showFlash(message)
                 if (!quote) navigate(`/orcamentos/${id}`, { replace: true })

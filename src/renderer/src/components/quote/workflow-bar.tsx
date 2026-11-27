@@ -1,7 +1,7 @@
 import { Ban, Check, CircleCheckBig, Copy, FileText, KeyRound, MessageCircle, PackageCheck, RotateCcw, Send, ThumbsDown, Undo2, Wrench } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { formatDate, formatKeyTag, formatKm, parseInteger } from '@shared/format'
-import { APPROVAL_CHANNEL_LABEL, type ApprovalChannel, type QuoteView } from '@shared/quotes'
+import { APPROVAL_CHANNEL_LABEL, PAYMENT_METHODS, type ApprovalChannel, type QuoteView } from '@shared/quotes'
 import type { SendResult, WorkflowAction } from '@shared/workflow'
 import { FormError } from '@/components/flash'
 import { Button } from '@/components/ui/button'
@@ -80,6 +80,8 @@ interface ActionsProps {
   /** Salva as alterações do rascunho antes de mudar o status; devolve o id ou undefined em erro. */
   persist: () => Promise<number | undefined>
   readOnly: boolean
+  /** Forma de pagamento na tela agora (sugerida ao entregar). */
+  paymentMethod: string
   onDone: (message: string, id: number) => void
 }
 
@@ -98,7 +100,7 @@ const ACTION_META: Record<WorkflowAction, { label: string; icon: typeof Send }> 
 /* As ações que não devolvem dados retornam `true` no sucesso: o retorno indica se deu certo. */
 
 /** Botões de status do orçamento/OS. O primeiro permitido é a ação principal. */
-export function WorkflowActions({ quote, persist, readOnly, onDone }: ActionsProps) {
+export function WorkflowActions({ quote, persist, readOnly, paymentMethod, onDone }: ActionsProps) {
   const [dialog, setDialog] = useState<DialogKind>(null)
   const [sent, setSent] = useState<{ id: number; result: SendResult } | null>(null)
   const submit = useSubmit()
@@ -169,7 +171,13 @@ export function WorkflowActions({ quote, persist, readOnly, onDone }: ActionsPro
       {dialog === 'openWorkOrder' && quote && <OpenWorkOrderDialog quote={quote} onClose={() => setDialog(null)} onDone={onDone} />}
       {dialog === 'refuse' && quote && <RefuseDialog quote={quote} onClose={() => setDialog(null)} onDone={onDone} />}
       {dialog === 'deliver' && quote && (
-        <DeliverDialog quote={quote} ensureSaved={ensureSaved} onClose={() => setDialog(null)} onDone={onDone} />
+        <DeliverDialog
+          quote={quote}
+          paymentMethod={paymentMethod}
+          ensureSaved={ensureSaved}
+          onClose={() => setDialog(null)}
+          onDone={onDone}
+        />
       )}
       {dialog === 'cancel' && quote && <CancelDialog quote={quote} onClose={() => setDialog(null)} onDone={onDone} />}
     </>
@@ -381,14 +389,21 @@ function RefuseDialog({ quote, onClose, onDone }: DialogProps) {
   )
 }
 
-function DeliverDialog({ quote, ensureSaved, onClose, onDone }: DialogProps & { ensureSaved: () => Promise<number | undefined> }) {
+function DeliverDialog({
+  quote,
+  paymentMethod,
+  ensureSaved,
+  onClose,
+  onDone
+}: DialogProps & { paymentMethod: string; ensureSaved: () => Promise<number | undefined> }) {
   const entry = quote.workOrder?.entryKm ?? quote.entryKm
   const [km, setKm] = useState('')
+  const [payment, setPayment] = useState(paymentMethod || PAYMENT_METHODS[0])
   const submit = useSubmit()
   async function confirm() {
     // Grava as últimas peças/mão de obra incluídas antes de fechar a OS.
     if (!(await ensureSaved())) return onClose()
-    if (await submit.run(async () => (await call('workflow:deliver', { id: quote.id, exitKm: parseInteger(km) }), true))) {
+    if (await submit.run(async () => (await call('workflow:deliver', { id: quote.id, exitKm: parseInteger(km), paymentMethod: payment }), true))) {
       onClose()
       onDone(quote.warrantyDays > 0 ? `Entregue. Garantia de ${quote.warrantyDays} dias a partir de hoje.` : 'Entregue.', quote.id)
     }
@@ -409,10 +424,17 @@ function DeliverDialog({ quote, ensureSaved, onClose, onDone }: DialogProps & { 
       }
     >
       <FormError message={submit.error && !Object.keys(submit.fields).length ? submit.error : null} />
+      <Field label="Forma de pagamento" htmlFor="wf-pay">
+        <Select id="wf-pay" value={payment} onChange={(e) => setPayment(e.target.value)}>
+          {(PAYMENT_METHODS as readonly string[]).includes(payment) ? null : <option>{payment}</option>}
+          {PAYMENT_METHODS.map((m) => (
+            <option key={m}>{m}</option>
+          ))}
+        </Select>
+      </Field>
       <Field label={`KM de saída (opcional${entry != null ? `, entrada ${formatKm(entry)}` : ''})`} htmlFor="wf-km" error={submit.fields.exitKm}>
         <Input
           id="wf-km"
-          autoFocus
           inputMode="numeric"
           value={km}
           onChange={(e) => {
@@ -491,6 +513,7 @@ export function StatusNotice({ quote }: { quote: QuoteView }) {
       <>
         Entregue em {formatDate(wo.deliveredAt!)}
         {wo.exitKm != null && `, com ${formatKm(wo.exitKm)} km`}.{' '}
+        {quote.paymentMethod ? `Pago com ${quote.paymentMethod}. ` : ''}
         {quote.warrantyDays > 0 ? `Garantia de ${quote.warrantyDays} dias a partir da entrega.` : 'Sem garantia.'}
       </>
     )

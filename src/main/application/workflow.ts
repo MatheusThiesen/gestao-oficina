@@ -115,13 +115,20 @@ export async function backToExecution(deps: WorkflowDeps, id: number): Promise<v
   await deps.workflow.setWorkOrderStatus(q.workOrder!.id, { status: 'EM_EXECUCAO', readyAt: null })
 }
 
-/** Entrega: a garantia começa a contar e a chave fica livre (a OS deixa de estar ativa). */
-export async function deliver(deps: WorkflowDeps, id: number, exitKm: number | null, now = new Date()): Promise<void> {
+/** Entrega (pago): registra como o cliente pagou, a garantia começa a contar e a chave fica livre. */
+export async function deliver(
+  deps: WorkflowDeps,
+  id: number,
+  exitKm: number | null,
+  paymentMethod: string | null = null,
+  now = new Date()
+): Promise<void> {
   const q = await load(deps, id, 'deliver')
   const entry = q.workOrder!.entryKm ?? q.entryKm
   if (exitKm != null && entry != null && exitKm < entry) {
     throw ValidationError.fields({ exitKm: `O km de saída não pode ser menor que o de entrada (${entry}).` })
   }
+  if (paymentMethod) await deps.workflow.setPaymentMethod(q.id, paymentMethod)
   await deps.workflow.setWorkOrderStatus(q.workOrder!.id, { status: 'ENTREGUE', deliveredAt: now, exitKm })
   if (exitKm) await deps.vehicles.bumpKm(q.vehicleId, exitKm)
 }
