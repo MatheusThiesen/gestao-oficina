@@ -168,7 +168,9 @@ export function WorkflowActions({ quote, persist, readOnly, onDone }: ActionsPro
       )}
       {dialog === 'openWorkOrder' && quote && <OpenWorkOrderDialog quote={quote} onClose={() => setDialog(null)} onDone={onDone} />}
       {dialog === 'refuse' && quote && <RefuseDialog quote={quote} onClose={() => setDialog(null)} onDone={onDone} />}
-      {dialog === 'deliver' && quote && <DeliverDialog quote={quote} onClose={() => setDialog(null)} onDone={onDone} />}
+      {dialog === 'deliver' && quote && (
+        <DeliverDialog quote={quote} ensureSaved={ensureSaved} onClose={() => setDialog(null)} onDone={onDone} />
+      )}
       {dialog === 'cancel' && quote && <CancelDialog quote={quote} onClose={() => setDialog(null)} onDone={onDone} />}
     </>
   )
@@ -310,7 +312,8 @@ function ApproveDialog({
       </label>
       {openNow && <KeyTagSelect value={key} onChange={setKey} error={submit.fields.keyTagNumber} />}
       <p className="m-0 text-[12.5px] text-muted">
-        O orçamento fica guardado exatamente como foi aprovado e não pode mais ser alterado.
+        Uma cópia do orçamento fica guardada exatamente como foi aprovado. Com a OS aberta, ainda dá para incluir peças e
+        mão de obra até a entrega.
       </p>
     </Modal>
   )
@@ -378,11 +381,13 @@ function RefuseDialog({ quote, onClose, onDone }: DialogProps) {
   )
 }
 
-function DeliverDialog({ quote, onClose, onDone }: DialogProps) {
+function DeliverDialog({ quote, ensureSaved, onClose, onDone }: DialogProps & { ensureSaved: () => Promise<number | undefined> }) {
   const entry = quote.workOrder?.entryKm ?? quote.entryKm
   const [km, setKm] = useState('')
   const submit = useSubmit()
   async function confirm() {
+    // Grava as últimas peças/mão de obra incluídas antes de fechar a OS.
+    if (!(await ensureSaved())) return onClose()
     if (await submit.run(async () => (await call('workflow:deliver', { id: quote.id, exitKm: parseInteger(km) }), true))) {
       onClose()
       onDone(quote.warrantyDays > 0 ? `Entregue. Garantia de ${quote.warrantyDays} dias a partir de hoje.` : 'Entregue.', quote.id)
@@ -391,7 +396,7 @@ function DeliverDialog({ quote, onClose, onDone }: DialogProps) {
   return (
     <Modal
       open
-      title="Entregar ao cliente"
+      title="Entregar ao cliente (pago)"
       onClose={onClose}
       footer={
         <>
@@ -420,6 +425,7 @@ function DeliverDialog({ quote, onClose, onDone }: DialogProps) {
         {quote.workOrder?.keyTagNumber != null && <li>A chave {formatKeyTag(quote.workOrder.keyTagNumber)} fica livre.</li>}
         <li>{quote.warrantyDays > 0 ? `A garantia de ${quote.warrantyDays} dias começa a contar hoje.` : 'Serviço sem garantia.'}</li>
         <li>Entra no faturamento do painel.</li>
+        <li className="font-semibold text-ink">Confirme que o cliente pagou: depois da entrega a OS fica fechada e não dá mais para alterar.</li>
       </ul>
     </Modal>
   )
@@ -497,8 +503,10 @@ export function StatusNotice({ quote }: { quote: QuoteView }) {
     return box(
       'ok',
       <>
-        Aprovado por {quote.approval.approvedBy} em {formatDate(quote.approval.approvedAt)} ({APPROVAL_CHANNEL_LABEL[quote.approval.channel]}).
-        Este orçamento é somente leitura.
+        Aprovado por {quote.approval.approvedBy} em {formatDate(quote.approval.approvedAt)} ({APPROVAL_CHANNEL_LABEL[quote.approval.channel]}).{' '}
+        {quote.editable
+          ? 'A OS está aberta: dá para incluir ou alterar peças e mão de obra até a entrega.'
+          : 'Este orçamento é somente leitura.'}
       </>
     )
   }

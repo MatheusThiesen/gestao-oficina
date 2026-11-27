@@ -48,10 +48,18 @@ export async function saveQuoteDraft(deps: QuoteDeps, input: QuoteDraftInput, no
 
   const existing = input.id ? await deps.quotes.findFull(input.id) : null
   if (input.id && !existing) throw new NotFoundError('Orçamento')
-  if (existing && (!isEditable(existing.status as QuoteStatus) || existing.next)) {
-    throw new ValidationError('Este orçamento não pode mais ser alterado. Crie uma nova versão.')
+  const existingWo = (existing?.workOrder?.status as WorkOrderStatus | undefined) ?? null
+  if (existing && (!isEditable(existing.status as QuoteStatus, existingWo) || existing.next)) {
+    throw new ValidationError(
+      existingWo ? 'Esta OS já foi finalizada e não pode mais ser alterada.' : 'Este orçamento não pode mais ser alterado. Crie uma nova versão.'
+    )
   }
+  if (existingWo && input.items.length === 0) throw new ValidationError('A OS precisa ter ao menos um item.')
 
+  // Com OS aberta, cliente e veículo ficam os da OS.
+  if (existingWo) {
+    input = { ...input, customerId: existing!.customerId, vehicleId: existing!.vehicleId, newCustomer: undefined, newVehicle: undefined }
+  }
   const customerId = input.customerId ?? (await saveCustomer(deps.customers, input.newCustomer!).catch(prefix('customer.'))).id
   const vehicleId =
     input.vehicleId ??
@@ -147,7 +155,7 @@ export function toView(q: QuoteFull): QuoteView {
     nextId: q.next?.id ?? null,
     status,
     displayStatus: (wo?.status ?? status) as DocumentStatus,
-    editable: isEditable(status) && !q.next,
+    editable: isEditable(status, (wo?.status as WorkOrderStatus) ?? null) && !q.next,
     actions: allowedActions({ quote: status, workOrder: (wo?.status as WorkOrderStatus) ?? null, superseded: !!q.next }),
     refusal: q.refusedAt ? { at: q.refusedAt.toISOString(), reason: q.refusalReason } : null,
     createdAt: q.createdAt.toISOString(),

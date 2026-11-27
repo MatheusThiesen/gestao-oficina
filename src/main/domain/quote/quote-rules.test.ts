@@ -10,6 +10,13 @@ describe('regras do orçamento', () => {
     expect(isEditable('EXPIRADO')).toBe(false)
   })
 
+  it('OS aberta continua editável até a entrega', () => {
+    expect(isEditable('APROVADO', 'EM_EXECUCAO')).toBe(true)
+    expect(isEditable('APROVADO', 'PRONTO')).toBe(true)
+    expect(isEditable('APROVADO', 'ENTREGUE')).toBe(false)
+    expect(isEditable('APROVADO', 'CANCELADA')).toBe(false)
+  })
+
   it('validade vai até o fim do último dia', () => {
     const until = computeValidUntil(new Date(2026, 10, 23, 9, 30), 10)
     expect(until.getDate()).toBe(3)

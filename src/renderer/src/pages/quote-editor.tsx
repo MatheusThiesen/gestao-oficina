@@ -76,7 +76,7 @@ function QuoteEditor({ settings, quote, initialPlate, onReload }: EditorProps) {
     if (readOnly) return
     const id = await persist()
     if (!id) return
-    showFlash('Orçamento salvo.')
+    showFlash(quote?.workOrder ? 'OS salva.' : 'Orçamento salvo.')
     if (!quote) navigate(`/orcamentos/${id}`, { replace: true })
     else onReload()
   }

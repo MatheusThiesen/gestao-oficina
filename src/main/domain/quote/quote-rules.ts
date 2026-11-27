@@ -1,8 +1,13 @@
-import type { QuoteStatus } from '@shared/status'
+import type { QuoteStatus, WorkOrderStatus } from '@shared/status'
 import type { QuoteLine } from './quote-totals'
 
-/** Só rascunho e aguardando aprovação podem ser editados. Aprovado vira somente leitura (mudança = nova versão). */
-export function isEditable(status: QuoteStatus): boolean {
+/**
+ * Rascunho e aguardando aprovação podem ser editados. Depois de aprovado, só com a OS aberta (em execução
+ * ou pronta): no meio do serviço podem entrar peças e mão de obra. Entregue (pago) ou cancelada trava de vez.
+ * Aprovado sem OS, recusado e expirado ficam somente leitura.
+ */
+export function isEditable(status: QuoteStatus, workOrder: WorkOrderStatus | null = null): boolean {
+  if (workOrder) return status === 'APROVADO' && (workOrder === 'EM_EXECUCAO' || workOrder === 'PRONTO')
   return status === 'RASCUNHO' || status === 'AGUARDANDO_APROVACAO'
 }
 
