@@ -58,7 +58,23 @@ installFileLog()
 process.on('uncaughtException', (error) => console.error('[uncaught]', error))
 process.on('unhandledRejection', (error) => console.error('[unhandled]', error))
 
+// Uma instância só: duas abrindo o mesmo banco ao mesmo tempo travam a gravação (SQLITE_BUSY,
+// que o Prisma mostra como "Operation has timed out"). A segunda só traz a janela da primeira para frente.
+const isPrimaryInstance = app.requestSingleInstanceLock()
+if (!isPrimaryInstance) {
+  app.quit()
+} else {
+  app.on('second-instance', () => {
+    const win = BrowserWindow.getAllWindows()[0]
+    if (!win) return
+    if (win.isMinimized()) win.restore()
+    win.show()
+    win.focus()
+  })
+}
+
 app.whenReady().then(async () => {
+  if (!isPrimaryInstance) return
   console.info(`[startup] versão ${app.getVersion()}, empacotado: ${app.isPackaged}`)
   app.setAppUserModelId(APP_USER_MODEL_ID)
   let appName = DEFAULT_APP_NAME
